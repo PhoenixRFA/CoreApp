@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -22,6 +23,7 @@ namespace CoreApp
         //  IApplicationBuilder - обязательный параметр для метода Configure
         //  IWebHostEnvironment - НЕ обязательный параметр. Позволяет получить информацию о среде
         //  в качестве параметров можно передавать любой сервис, зарегистрированный в методе ConfigureServices
+        //Выполняется один раз при создании объекта класса Startup
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             //если проиложение в разработке
@@ -34,16 +36,66 @@ namespace CoreApp
             //включаем возможность маршрутизации, например - использование метода UseEndpoints
             app.UseRouting();
 
+            //! Компоненты middleware создаются один раз и живут в течение всего жизненного цикла приложения
+            //т.е. значение x не будет сбрасываться между запросами
+            int x = 1;
+            
             //установка маршрутов
             app.UseEndpoints(endpoints =>
             {
                 //обработка Get запроса по адресу "/"
                 endpoints.MapGet("/", async context =>
                 {
+                    x += 7;
                     //отправка ответа прямо в контекст
-                    await context.Response.WriteAsync("Hello World!");
+                    await context.Response.WriteAsync($"Hello World! x={x}");
                 });
             });
+
+            app.Use(async (context, next) =>
+            {
+                x -= 3;
+                await next.Invoke();
+                x -= 1;
+            });
+
+            app.Map("/index", builder =>
+            {
+                builder.Run(context=>context.Response.WriteAsync("This is Index"));
+            });
+
+            app.MapWhen(context => context.Request.Path.Value.Contains("foo"), builder =>
+            {
+                builder.Run(context => context.Response.WriteAsync("<h1>BAR!!</h1>"));
+            });
+            
+            //Для создания компонентов middleware используется делегат RequestDelegate
+            //Он выполняет некоторое действие и принимает контекст запроса
+            RequestDelegate delegateExample = context => context.Response.WriteAsync($"Not Found! x={x}");
+
+            app.Run(delegateExample);
         }
     }
+
+    /* встроенные компоненты middleware:
+     *
+     * Authentication:                          предоставляет поддержку аутентификации
+     * Cookie Policy:                           отслеживает согласие пользователя на хранение связанной с ним информации в куках
+     * CORS:                                    обеспечивает поддержку кроссдоменных запросов
+     * Diagnostics:                             предоставляет страницы статусных кодов, функционал обработки исключений, страницу исключений разработчика
+     * Forwarded Headers:                       перенаправляет зголовки запроса
+     * Health Check:                            проверяет работоспособность приложения asp.net core
+     * HTTP Method Override:                    позволяет входящему POST-запросу переопределить метод
+     * HTTPS Redirection:                       перенаправляет все запросы HTTP на HTTPS
+     * HTTP Strict Transport Security (HSTS):   для улучшения безопасности приложения добавляет специальный заголовок ответа
+     * MVC:                                     обеспечивает функционал фреймворка MVC
+     * Request Localization:                    обеспечивает поддержку локализации
+     * Response Caching:                        позволяет кэшировать результаты запросов
+     * Response Compression:                    обеспечивает сжатие ответа клиенту
+     * URL Rewrite:                             предоставляет функциональность URL Rewriting
+     * Endpoint Routing:                        предоставляет механизм маршрутизации
+     * Session:                                 предоставляет поддержку сессий
+     * Static Files:                            предоставляет поддержку обработки статических файлов
+     * WebSockets:                              добавляет поддержку протокола WebSockets
+     */
 }
