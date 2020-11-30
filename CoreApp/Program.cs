@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
@@ -85,6 +86,12 @@ namespace CoreApp
                 {
                     //устанавливается стартовый класс приложения - класс Startup, с которого и будет начинаться обработка входящих запросов
                     webBuilder.UseStartup<Startup>();
+                    
+                    //либо можно использовать метод UseStartup(IWebHostBuilder, String)
+                    //и тогда вместо Startup будет использоваться Startup{EnvironmentName}, (например StartupDevelopment)
+                    //если класс Startup{EnvironmentName} не будет найден, то будет использован класс Startup
+                    //string assemblyName = typeof(Startup).GetTypeInfo().Assembly.FullName;
+                    //webBuilder.UseStartup(assemblyName);
                 })
                 //создает хост - объект IHost
                 .Build()

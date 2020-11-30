@@ -1,7 +1,8 @@
-using System.Threading.Tasks;
+using CoreApp.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -12,26 +13,49 @@ namespace CoreApp
     //Является входной точкой в приложение ASP.NET Core
     public class Startup
     {
-        //Настройка служб приложения - НЕ обязательный метод
+        //Из конструктора Startup можно получить объекты: IWebHostEnvironment, IHostEnvironment и IConfiguration (ни одного или все сразу)
+        public Startup(IHostEnvironment env2, IConfiguration config)
+        {
+
+        }
+
+        //Настройка служб приложения - НЕ обязательный метод, вызывается ПЕРЕД Configure
         //Use this method to add services to the container
         public void ConfigureServices(IServiceCollection services)
         {
         }
 
+        //В классе Startup могут присутствовать методы вида Configure{EnvironmentName}Services и Configure{EnvironmentName}
+        //которые будут вызываться в соответствующих средах
+        //если такие методы не будут найдены, то будут использованы простые ConfigureServices и Configure
+        /*public void ConfigureDevelopmentServices(IServiceCollection services) { }
+        public void ConfigureDevelopment(IApplicationBuilder app)
+        {
+            app.Run(context=>context.Response.WriteAsync("<h1>This is Develoment!</h1>"));
+        }*/
+
         //Настройка конвейера обработки запросов
         //Use this method to configure the HTTP request pipeline
         //  IApplicationBuilder - обязательный параметр для метода Configure
         //  IWebHostEnvironment - НЕ обязательный параметр. Позволяет получить информацию о среде
+        //  ILoggerFactory      - НЕ обязательный параметр.
         //  в качестве параметров можно передавать любой сервис, зарегистрированный в методе ConfigureServices
         //Выполняется один раз при создании объекта класса Startup
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UsePerformanceTimer();
+
             //если проиложение в разработке
             if (env.IsDevelopment())
             {
                 //выводить специальную страницу с описанием ошибки
                 app.UseDeveloperExceptionPage();
             }
+
+            //включаем в конвеер свой компонент middleware
+            //app.UseMiddleware<TokenMiddleware>();
+            //либо через метод расширения
+            app.UseToken("1234");
 
             //включаем возможность маршрутизации, например - использование метода UseEndpoints
             app.UseRouting();
@@ -73,7 +97,17 @@ namespace CoreApp
             //Он выполняет некоторое действие и принимает контекст запроса
             RequestDelegate delegateExample = context => context.Response.WriteAsync($"Not Found! x={x}");
 
-            app.Run(delegateExample);
+            //pp.Run(delegateExample);
+
+            app.Use(async (context, next) => await next());
+        }
+    }
+
+    public class StartupDevelopment
+    {
+        public void Configure(IApplicationBuilder app)
+        {
+            app.Run(context=>context.Response.WriteAsync("<h1>This is Develoment</h1>"));
         }
     }
 
