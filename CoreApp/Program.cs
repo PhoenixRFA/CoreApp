@@ -92,6 +92,9 @@ namespace CoreApp
                     //если класс Startup{EnvironmentName} не будет найден, то будет использован класс Startup
                     //string assemblyName = typeof(Startup).GetTypeInfo().Assembly.FullName;
                     //webBuilder.UseStartup(assemblyName);
+
+                    //По умолчанию webRoot указывает на папку wwwroot, но можно указать свою папку
+                    //webBuilder.UseWebRoot("Content");
                 })
                 //создает хост - объект IHost
                 .Build()

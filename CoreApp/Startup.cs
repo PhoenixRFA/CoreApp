@@ -1,9 +1,13 @@
+using System.Collections.Generic;
+using System.IO;
 using CoreApp.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 
 namespace CoreApp
@@ -52,6 +56,48 @@ namespace CoreApp
                 app.UseDeveloperExceptionPage();
             }
 
+            //Объединяет вызов UseDefaultFiles, UseDirectoryBrowser и UseStaticFiles
+            //app.UseFileServer(new FileServerOptions
+            //{
+            //    StaticFileOptions = {
+            //        FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")),
+            //        RequestPath = string.Empty
+            //    },
+
+            //    EnableDirectoryBrowsing = true,
+            //    DirectoryBrowserOptions =
+            //    {
+            //        FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "content")),
+            //        RequestPath = "/admin/contentFolder"
+            //    },
+
+            //    EnableDefaultFiles = true,
+            //    DefaultFilesOptions =
+            //    {
+            //        DefaultFileNames = new List<string>{ "index.html" }
+            //    }
+            //});
+
+            ////позволяет пользователям просматривать содержимое каталога wwwroot
+            ////также можно переопределить на какую папку будет указывать DirectoryBrowser
+            ////и по какому url DirectoryBrowser будет "открываться"
+            //app.UseDirectoryBrowser(new DirectoryBrowserOptions
+            //{
+            //    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"content")),
+            //    RequestPath = "/admin/contentFolder"
+            //});
+            ////при обращении к корню ищет статические файлы: default.htm, default.html, index.htm, index.html
+            ////файлы по-умолчанию можно переопределить
+            app.UseDefaultFiles(new DefaultFilesOptions
+            {
+                DefaultFileNames = new List<string> { "index.html" }
+            });
+            //кстати UseDefaultFiles не прерывает конвеер, а только подставляет нужный path 
+            app.Run(context=>context.Response.WriteAsync(context.Request.Path));
+            
+            //middleware для использования статичных файлов
+            app.UseStaticFiles();
+            
             //включаем в конвеер свой компонент middleware
             //app.UseMiddleware<TokenMiddleware>();
             //либо через метод расширения
