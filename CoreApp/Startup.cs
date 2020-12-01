@@ -74,6 +74,13 @@ namespace CoreApp
                     //отправка ответа прямо в контекст
                     await context.Response.WriteAsync($"Hello World! x={x}");
                 });
+
+                endpoints.MapGet("/env", async context =>
+                {
+                    bool rootExists = env.ContentRootFileProvider.GetDirectoryContents("/").Exists;
+                    string result = $"<h1>IWebHostEnvironment</h1><p>ApplicationName: {env.ApplicationName}<br>EnvironmentName: {env.EnvironmentName}<br>WebRootPath: {env.WebRootPath}<br>ContentRootPath: {env.ContentRootPath}<br>Is root exists: {rootExists}</p>";
+                    await context.Response.WriteAsync(result);
+                });
             });
 
             app.Use(async (context, next) =>

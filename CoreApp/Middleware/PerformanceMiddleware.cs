@@ -47,6 +47,9 @@ namespace CoreApp.Middleware
                 return Task.CompletedTask;
             });
 
+            //Позволяет узнать - начата ли отправка ответа
+            //context.Response.HasStarted
+
             await _next.Invoke(context);
         }
 #pragma warning restore AsyncFixer01 // Unnecessary async/await usage
