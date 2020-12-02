@@ -28,6 +28,21 @@ namespace CoreApp
         //Use this method to add services to the container
         public void ConfigureServices(IServiceCollection services)
         {
+            ////Можно настроить параметры переадресации (порт и статус переадресации)
+            //services.AddHttpsRedirection(options =>
+            //{
+            //    options.HttpsPort = 44334;
+            //    options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
+            //});
+
+            ////Настройки для HTST
+            //services.AddHsts(opts =>
+            //{
+            //    opts.ExcludedHosts.Add("ignore.me");
+            //    opts.IncludeSubDomains = true;
+            //    opts.MaxAge = TimeSpan.FromDays(366);
+            //    opts.Preload = true;
+            //});
         }
 
         //В классе Startup могут присутствовать методы вида Configure{EnvironmentName}Services и Configure{EnvironmentName}
@@ -62,16 +77,22 @@ namespace CoreApp
                 //можно передать путь к обработчику ошибок
                 //!Обработчик не производит редирект, т.е. путь и статус остаются теже
                 app.UseExceptionHandler("/errorHandler");
+
+                //Добавляет заголовки HSTS. Настраивается в ConfigureServices
+                //app.UseHsts();
             }
 
-            ////Стандартный обработчик для Http ошибок (коды 400-599)
-            ////Можно заменить выводимое сообщение, вместо {0} будек статусный код
-            //app.UseStatusCodePages("text/plain", "Code: {0}");
+            //Производит переадресацию на https. Параметры можно настроить в ConfigureServices
+            app.UseHttpsRedirection();
+
+            //Стандартный обработчик для Http ошибок (коды 400-599)
+            //Можно заменить выводимое сообщение, вместо {0} будек статусный код
+            app.UseStatusCodePages(/*"text/plain", "Code: {0}"*/);
             ////другой обработчик производит переадресацию на другую страницу (302 / Found). Тоже можно передать код ошибки через {0}
             //app.UseStatusCodePagesWithRedirects("/env{0}");
             //еще вариант - рендер ответа по тому же пути
-            //тут указывается путь к обработчику и строка с параметрами, где {0} статусный код
-            app.UseStatusCodePagesWithReExecute("/env", "?id={0}");
+            ////тут указывается путь к обработчику и строка с параметрами, где {0} статусный код
+            //app.UseStatusCodePagesWithReExecute("/env", "?id={0}");
 
             //Объединяет вызов UseDefaultFiles, UseDirectoryBrowser и UseStaticFiles
             app.UseFileServer(new FileServerOptions
