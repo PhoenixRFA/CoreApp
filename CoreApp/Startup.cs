@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using CoreApp.Middleware;
@@ -55,28 +56,44 @@ namespace CoreApp
                 //выводить специальную страницу с описанием ошибки
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                //обработчик ошибок, используется для production окружения
+                //можно передать путь к обработчику ошибок
+                //!Обработчик не производит редирект, т.е. путь и статус остаются теже
+                app.UseExceptionHandler("/errorHandler");
+            }
+
+            ////Стандартный обработчик для Http ошибок (коды 400-599)
+            ////Можно заменить выводимое сообщение, вместо {0} будек статусный код
+            //app.UseStatusCodePages("text/plain", "Code: {0}");
+            ////другой обработчик производит переадресацию на другую страницу (302 / Found). Тоже можно передать код ошибки через {0}
+            //app.UseStatusCodePagesWithRedirects("/env{0}");
+            //еще вариант - рендер ответа по тому же пути
+            //тут указывается путь к обработчику и строка с параметрами, где {0} статусный код
+            app.UseStatusCodePagesWithReExecute("/env", "?id={0}");
 
             //Объединяет вызов UseDefaultFiles, UseDirectoryBrowser и UseStaticFiles
-            //app.UseFileServer(new FileServerOptions
-            //{
-            //    StaticFileOptions = {
-            //        FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")),
-            //        RequestPath = string.Empty
-            //    },
+            app.UseFileServer(new FileServerOptions
+            {
+                StaticFileOptions = {
+                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")),
+                    RequestPath = string.Empty
+                },
 
-            //    EnableDirectoryBrowsing = true,
-            //    DirectoryBrowserOptions =
-            //    {
-            //        FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "content")),
-            //        RequestPath = "/admin/contentFolder"
-            //    },
+                EnableDirectoryBrowsing = true,
+                DirectoryBrowserOptions =
+                {
+                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "content")),
+                    RequestPath = "/admin/contentFolder"
+                },
 
-            //    EnableDefaultFiles = true,
-            //    DefaultFilesOptions =
-            //    {
-            //        DefaultFileNames = new List<string>{ "index.html" }
-            //    }
-            //});
+                EnableDefaultFiles = true,
+                DefaultFilesOptions =
+                {
+                    DefaultFileNames = new List<string>{ "index.html" }
+                }
+            });
 
             ////позволяет пользователям просматривать содержимое каталога wwwroot
             ////также можно переопределить на какую папку будет указывать DirectoryBrowser
@@ -88,20 +105,20 @@ namespace CoreApp
             //});
             ////при обращении к корню ищет статические файлы: default.htm, default.html, index.htm, index.html
             ////файлы по-умолчанию можно переопределить
-            app.UseDefaultFiles(new DefaultFilesOptions
-            {
-                DefaultFileNames = new List<string> { "index.html" }
-            });
+            //app.UseDefaultFiles(new DefaultFilesOptions
+            //{
+            //    DefaultFileNames = new List<string> { "index.html" }
+            //});
             //кстати UseDefaultFiles не прерывает конвеер, а только подставляет нужный path 
-            app.Run(context=>context.Response.WriteAsync(context.Request.Path));
-            
+            //app.Run(context=>context.Response.WriteAsync(context.Request.Path));
+
             //middleware для использования статичных файлов
-            app.UseStaticFiles();
-            
+            //app.UseStaticFiles();
+
             //включаем в конвеер свой компонент middleware
             //app.UseMiddleware<TokenMiddleware>();
             //либо через метод расширения
-            app.UseToken("1234");
+            //app.UseToken("1234");
 
             //включаем возможность маршрутизации, например - использование метода UseEndpoints
             app.UseRouting();
@@ -127,6 +144,10 @@ namespace CoreApp
                     string result = $"<h1>IWebHostEnvironment</h1><p>ApplicationName: {env.ApplicationName}<br>EnvironmentName: {env.EnvironmentName}<br>WebRootPath: {env.WebRootPath}<br>ContentRootPath: {env.ContentRootPath}<br>Is root exists: {rootExists}</p>";
                     await context.Response.WriteAsync(result);
                 });
+
+                endpoints.MapGet("/err", context => throw new Exception("This is test exception"));
+                
+                endpoints.MapGet("/errorHandler", context => context.Response.WriteAsync($"<h1>Oops!</h1><h2>Some error happened!<h2>"));
             });
 
             app.Use(async (context, next) =>
@@ -149,10 +170,9 @@ namespace CoreApp
             //Для создания компонентов middleware используется делегат RequestDelegate
             //Он выполняет некоторое действие и принимает контекст запроса
             RequestDelegate delegateExample = context => context.Response.WriteAsync($"Not Found! x={x}");
+            //app.Run(delegateExample);
 
-            //pp.Run(delegateExample);
-
-            app.Use(async (context, next) => await next());
+            //app.Use(async (context, next) => await next());
         }
     }
 
