@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using CoreApp.Middleware;
+using CoreApp.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -18,6 +22,8 @@ namespace CoreApp
     //Является входной точкой в приложение ASP.NET Core
     public class Startup
     {
+        private IServiceCollection _services;
+
         //Из конструктора Startup можно получить объекты: IWebHostEnvironment, IHostEnvironment и IConfiguration (ни одного или все сразу)
         public Startup(IHostEnvironment env2, IConfiguration config)
         {
@@ -28,6 +34,9 @@ namespace CoreApp
         //Use this method to add services to the container
         public void ConfigureServices(IServiceCollection services)
         {
+            //По умолчанию приложение содержит ряд сервисов (78 штук)
+            _services = services;
+
             ////Можно настроить параметры переадресации (порт и статус переадресации)
             //services.AddHttpsRedirection(options =>
             //{
@@ -43,6 +52,35 @@ namespace CoreApp
             //    opts.MaxAge = TimeSpan.FromDays(366);
             //    opts.Preload = true;
             //});
+
+            //Подключение своего сервиса
+            //services.AddTransient<IMessageSender, EmailMessageSender>();
+            //services.AddTransient<IMessageSender, SmsMessageSender>();
+            services.AddSingleton<IMessageSender, RandomMessageSender>();
+            
+            //Пример фабрики сервисов. Нужная реализация будет возвращаться в замисимости от времени
+            services.AddTransient<IMessageSender>(services =>
+            {
+                int seconds = DateTime.Now.Second;
+                if (seconds < 20)
+                {
+                    return new EmailMessageSender();
+                }
+                else if (seconds < 40)
+                {
+                    return new SmsMessageSender();
+                }
+                else
+                {
+                    return new RandomMessageSender();
+                }
+            });
+            //Для удобства можно использовать методы расширения
+            //services.AddEmailMessageSender();
+            //Сервисы можно подключать не используя интерфейс
+            //И потом использовать ServiceUsingExample sender
+            //в этом случае в конструктор класа подставятся необходимые зависимости
+            services.AddTransient<ServiceUsingExample>();
         }
 
         //В классе Startup могут присутствовать методы вида Configure{EnvironmentName}Services и Configure{EnvironmentName}
@@ -61,7 +99,7 @@ namespace CoreApp
         //  ILoggerFactory      - НЕ обязательный параметр.
         //  в качестве параметров можно передавать любой сервис, зарегистрированный в методе ConfigureServices
         //Выполняется один раз при создании объекта класса Startup
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IMessageSender sender, ServiceUsingExample senderService)
         {
             app.UsePerformanceTimer();
 
@@ -168,7 +206,41 @@ namespace CoreApp
 
                 endpoints.MapGet("/err", context => throw new Exception("This is test exception"));
                 
-                endpoints.MapGet("/errorHandler", context => context.Response.WriteAsync($"<h1>Oops!</h1><h2>Some error happened!<h2>"));
+                endpoints.MapGet("/errorHandler", context => context.Response.WriteAsync("<h1>Oops!</h1><h2>Some error happened!<h2>"));
+                endpoints.MapGet("/listServices", ListAllServices);
+                
+                //Замечание при работе с разным жизненным циклом:
+                //Transient:
+                //  в /send и /send2 значение не будет менятся между запросами, но у каждого будет своё значение
+                //  это из-за того, что Configure вызывается один раз при построении приложения и переданные объекты сервисов остаются одни и теже
+                //  в /send3 и /send4 каждый раз будет меняться значение, т.к. каждый раз запрашивается новый сервис
+                //Scoped:
+                //  в /send и /send2 значение будет одно и тоже, т.е. одинаковое у обоих причем даже в разных запросах
+                //  это тоже из-за того, что Configure вызывается один раз, но в этот раз объект сервиса одинаковый в рамках запроса, т.е. senderService._sender == sender
+                //  в /send3 каждый раз будет меняться значение
+                //  в /send4 вернется ошибка. В чем причина - сложно сказать. Скорее всего дело в том, что объект сервиса привязывается к запросу.
+                //      А т.к. тут вызывается ApplicationServices, созданный в первом запросе, то после завершения запроса объект удаляется сборщиком мусора и ссылка на сервис теряется.
+                //      По идее тогда этот путь должен отработать первым запросом? Идея не сработала =(
+                //Singleton:
+                //  во всех случаях выводится одно и то же значение
+                endpoints.MapGet("/send", context => context.Response.WriteAsync(sender.Send()));
+                endpoints.MapGet("/send2", context =>
+                {
+                    string result = senderService.Send();
+                    return context.Response.WriteAsync(result);
+                });
+                endpoints.MapGet("/send3", context =>
+                {
+                    var sender = context.RequestServices.GetService<IMessageSender>();
+                    string result = sender.Send();
+                    return context.Response.WriteAsync(result);
+                });
+                endpoints.MapGet("/send4", context =>
+                {
+                    var sender = app.ApplicationServices.GetService<IMessageSender>();
+                    string result = sender.Send();
+                    return context.Response.WriteAsync(result);
+                });
             });
 
             app.Use(async (context, next) =>
@@ -190,12 +262,32 @@ namespace CoreApp
             
             //Для создания компонентов middleware используется делегат RequestDelegate
             //Он выполняет некоторое действие и принимает контекст запроса
-            RequestDelegate delegateExample = context => context.Response.WriteAsync($"Not Found! x={x}");
+            //RequestDelegate delegateExample = context => context.Response.WriteAsync($"Not Found! x={x}");
             //app.Run(delegateExample);
 
             //app.Use(async (context, next) => await next());
         }
-    }
+
+        /// <summary> Информация по установленным сервисах </summary>
+        public async Task ListAllServices(HttpContext context)
+        {
+            var sb = new StringBuilder();
+            sb.Append("<h1>Все сервисы</h1>");
+            sb.Append("<table>");
+            sb.Append("<tr><th>Тип</th><th>Lifetime</th><th>Реализация</th></tr>");
+            foreach (ServiceDescriptor svc in _services)
+            {
+                sb.Append("<tr>");
+                sb.Append($"<td>{svc.ServiceType.FullName}</td>");
+                sb.Append($"<td>{svc.Lifetime}</td>");
+                sb.Append($"<td>{svc.ImplementationType?.FullName}</td>");
+                sb.Append("</tr>");
+            }
+            sb.Append("</table>");
+            context.Response.ContentType = "text/html;charset=utf-8";
+            await context.Response.WriteAsync(sb.ToString());
+        }
+}
 
     public class StartupDevelopment
     {
@@ -225,5 +317,32 @@ namespace CoreApp
      * Session:                                 предоставляет поддержку сессий
      * Static Files:                            предоставляет поддержку обработки статических файлов
      * WebSockets:                              добавляет поддержку протокола WebSockets
+     */
+
+    /* Передача зависимостей
+     *
+     * Через конструктор класса (за исключением конструктора класса Startup)
+     *      см. ServiceUsingExample
+     * Через параметр метода Configure класса Startup
+     * Через параметр метода Invoke компонента middleware
+     *      см. TokenMiddleware
+     * Через свойство RequestServices контекста запроса HttpContext в компонентах middleware
+     *      антипаттерн - service locator, не рекомендуется к использованию
+     * Через свойство ApplicationServices объекта IApplicationBuilder в классе Startup
+     *      использование подобно пред. случаю. НО! Этот способ не годится при использовании Scoped сервисов
+     */
+
+    /* Жизненный цикл сервисов
+     *
+     * Transient: каждый раз создается новый объект сервиса
+     *      В течение одного запроса может быть несколько обращений к сервису,
+     *      соответственно при каждом обращении будет создаваться новый объект.
+     *      Подобная модель наиболее подходит для !легковесных сервисов!,
+     *      которые не хранят данных о состоянии.
+     * Scoped: для каждого запроса создается свой объект сервиса
+     *      В этом случае в рамках одного запроса все обращения будут направлены
+     *      к одному и тому же объекту сервиса.
+     * Singleton: тут всё просто - при первом обращении к сервису создается объект
+     *      и "живет" пока приложение не закроется.
      */
 }

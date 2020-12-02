@@ -16,43 +16,42 @@ namespace CoreApp.Middleware
             _stopwatch = new Stopwatch();
         }
 
-#pragma warning disable AsyncFixer01 // Unnecessary async/await usage
         public async Task InvokeAsync(HttpContext context)
         {
             _stopwatch.Reset();
             _stopwatch.Start();
 
             //Пример из SO https://stackoverflow.com/questions/37395227/add-response-headers-to-asp-net-core-middleware
-            //context.Response.OnStarting(state =>
-            //{
-            //    var httpContext = (HttpContext) state;
+            context.Response.OnStarting(state =>
+            {
+                var httpContext = (HttpContext)state;
 
-            //    _stopwatch.Stop();
+                _stopwatch.Stop();
 
-            //    httpContext.Response.Headers.Add("X-RESPONSE-PERFORMANCE-TICKS", _stopwatch.ElapsedTicks.ToString());
-            //    httpContext.Response.Headers.Add("X-RESPONSE-PERFORMANCE-MILIS", _stopwatch.ElapsedMilliseconds.ToString());
+                httpContext.Response.Headers.Add("X-RESPONSE-PERFORMANCE-TICKS", _stopwatch.ElapsedTicks.ToString());
+                httpContext.Response.Headers.Add("X-RESPONSE-PERFORMANCE-MILIS", _stopwatch.ElapsedMilliseconds.ToString());
 
-            //    return Task.CompletedTask;
-            //}, context);
+                return Task.CompletedTask;
+            }, context);
 
             //Нельзя менять загловки ответа, после того, как ответ начал отправляться
             //по этому используется спец. метод, который вызывает делегат непосредственно перез началом отправки ответа
-            context.Response.OnStarting(() =>
-            {
-                _stopwatch.Stop();
+            //!В таком виде при выбрасывании исключения выкидывало сюда, а не в место где исключение произошло
+            //context.Response.OnStarting(() =>
+            //{
+            //    _stopwatch.Stop();
 
-                context.Response.Headers.Add("X-RESPONSE-PERFORMANCE-TICKS", _stopwatch.ElapsedTicks.ToString());
-                context.Response.Headers.Add("X-RESPONSE-PERFORMANCE-MILIS", _stopwatch.ElapsedMilliseconds.ToString());
+            //    context.Response.Headers.Add("X-RESPONSE-PERFORMANCE-TICKS", _stopwatch.ElapsedTicks.ToString());
+            //    context.Response.Headers.Add("X-RESPONSE-PERFORMANCE-MILIS", _stopwatch.ElapsedMilliseconds.ToString());
 
-                return Task.CompletedTask;
-            });
+            //    return Task.CompletedTask;
+            //});
 
             //Позволяет узнать - начата ли отправка ответа
             //context.Response.HasStarted
 
             await _next.Invoke(context);
         }
-#pragma warning restore AsyncFixer01 // Unnecessary async/await usage
     }
 
     public static class PerformanceMiddlewareExtension

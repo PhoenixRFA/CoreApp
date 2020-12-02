@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using CoreApp.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -26,14 +27,14 @@ namespace CoreApp.Middleware
         //В классе должен быть определен метод, который должен называться Invoke, либо InvokeAsync
         //Этот метод должен возвращать Task и принимать HttpContext (контекст запроса)
         //Данный метод собственно и будет обрабатывать запрос
-        public async Task InvokeAsync(HttpContext context)
+        public async Task InvokeAsync(HttpContext context, IMessageSender sender)
         {
             StringValues token = context.Request.Query["token"];
 
             if (token != _token)
             {
                 context.Response.StatusCode = 403;
-                await context.Response.WriteAsync("Token is invalid");
+                await context.Response.WriteAsync($"Token is invalid\n{sender.Send()}");
                 return;
             }
 
