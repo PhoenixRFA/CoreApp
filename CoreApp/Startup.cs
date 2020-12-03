@@ -330,6 +330,11 @@ namespace CoreApp
      *      антипаттерн - service locator, не рекомендуется к использованию
      * Через свойство ApplicationServices объекта IApplicationBuilder в классе Startup
      *      использование подобно пред. случаю. НО! Этот способ не годится при использовании Scoped сервисов
+     *
+     * Рекомендуется группировать связанные сервисы в методы расширения.
+     * Также рекомендуется помещать методы расширения в namespace Microsoft.Extensions.DependencyInjection
+     *
+     * Больше информации: https://docs.microsoft.com/ru-ru/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-5.0
      */
 
     /* Жизненный цикл сервисов
@@ -344,5 +349,13 @@ namespace CoreApp
      *      к одному и тому же объекту сервиса.
      * Singleton: тут всё просто - при первом обращении к сервису создается объект
      *      и "живет" пока приложение не закроется.
+     *
+     * Нельзя в Singleton сервисах использовать Scoped зависимости.
+     * Потому что scoped привязывается к контексту запроса, а на момент создания
+     * Singleton - запроса еще нет, и зависимоти тоже не будет.
+     */
+
+    /* IHostEnvironment VS IWebHostEnvironment
+     * По возможности стоит использовать IHostEnvironment, за исключением тех случаев, когда нужен доступ к WebRootPath или WebRootFileProvider
      */
 }
