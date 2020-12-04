@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
+using CoreApp.Models;
 using CoreApp.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace CoreApp.Middleware
@@ -30,7 +32,7 @@ namespace CoreApp.Middleware
         //Этот метод должен возвращать Task и принимать HttpContext (контекст запроса)
         //Данный метод собственно и будет обрабатывать запрос
         //DI: при внедрении сервиса через Invoke - объект сервиса будет подчиняться жизненному циклу самого сервиса
-        public async Task InvokeAsync(HttpContext context, IMessageSender sender)
+        public async Task InvokeAsync(HttpContext context, IMessageSender sender, IOptions<ExampleOptions> options)
         {
             StringValues token = context.Request.Query["token"];
 
@@ -40,7 +42,7 @@ namespace CoreApp.Middleware
                 var senderAlt = context.RequestServices.GetService<IMessageSender>();
 
                 context.Response.StatusCode = 403;
-                await context.Response.WriteAsync($"Token is invalid\n{(sender ?? senderAlt).Send()}");
+                await context.Response.WriteAsync($"Token is invalid\n{(sender ?? senderAlt).Send()}\n{options.Value.Login}");
                 return;
             }
 

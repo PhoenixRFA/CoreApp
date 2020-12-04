@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
 namespace CoreApp
@@ -95,6 +97,15 @@ namespace CoreApp
 
                     //По умолчанию webRoot указывает на папку wwwroot, но можно указать свою папку
                     //webBuilder.UseWebRoot("Content");
+                })
+                //Тут можно добавить другие источники конфигурации, и тогда они будут доступны в IConfigure
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.AddInMemoryCollection(new Dictionary<string, string>
+                    {
+                        {"_custom1", "foo"},
+                        {"_custom2", "bar"}
+                    });
                 })
                 //создает хост - объект IHost
                 .Build()

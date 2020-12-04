@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CoreApp.Middleware;
+using CoreApp.Models;
 using CoreApp.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -23,11 +24,21 @@ namespace CoreApp
     public class Startup
     {
         private IServiceCollection _services;
+        private readonly IConfiguration _exampleConfig;
+        private readonly IConfiguration _appConfig;
 
         //Из конструктора Startup можно получить объекты: IWebHostEnvironment, IHostEnvironment и IConfiguration (ни одного или все сразу)
         public Startup(IHostEnvironment env2, IConfiguration config)
         {
+            _appConfig = config;
 
+            _exampleConfig = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    {"login", "user1"},
+                    {"password", "qwerty"}
+                })
+                .Build();
         }
 
         //Настройка служб приложения - НЕ обязательный метод, вызывается ПЕРЕД Configure
@@ -81,6 +92,9 @@ namespace CoreApp
             //И потом использовать ServiceUsingExample sender
             //в этом случае в конструктор класа подставятся необходимые зависимости
             services.AddTransient<ServiceUsingExample>();
+
+            //Привязка конфига к объекту и внедрение
+            services.Configure<ExampleOptions>(_exampleConfig);
         }
 
         //В классе Startup могут присутствовать методы вида Configure{EnvironmentName}Services и Configure{EnvironmentName}
@@ -177,7 +191,7 @@ namespace CoreApp
             //включаем в конвеер свой компонент middleware
             //app.UseMiddleware<TokenMiddleware>();
             //либо через метод расширения
-            //app.UseToken("1234");
+            app.UseToken("1234");
 
             //включаем возможность маршрутизации, например - использование метода UseEndpoints
             app.UseRouting();
@@ -208,6 +222,51 @@ namespace CoreApp
                 
                 endpoints.MapGet("/errorHandler", context => context.Response.WriteAsync("<h1>Oops!</h1><h2>Some error happened!<h2>"));
                 endpoints.MapGet("/listServices", ListAllServices);
+
+                //Конфигурация. Пример операций чтения/изменения
+                endpoints.MapGet("/getConfig", context =>
+                {
+                    string username = _exampleConfig["username"];
+                    string[] configs = _exampleConfig.GetChildren().Select(x=>$"Path={x.Path}; {x.Key}={x.Value}").ToArray();
+                    
+                    //Примеры привязки конфигурации к объекту                //По-умолчанию привязываются только публичные переменные
+                    var bindedOptions = new ExampleOptions();                //если установить BindNonPublicProperties = true, то будут привязываться все переменные, за исключением readonly
+                    _exampleConfig.Bind(bindedOptions, options => options.BindNonPublicProperties = true);
+                    var bindedOptionsAlt = _exampleConfig.Get<ExampleOptions>();
+                    var bindedOptionsAlt2 = _exampleConfig.Get<ExampleOptions>(options => options.BindNonPublicProperties = true);
+
+                    return context.Response.WriteAsync($"username: {username}\n\nAll configs:\n{string.Join("\n", configs)}");
+                });
+                endpoints.MapGet("/getConfigAll", context =>
+                {
+                    string[] configs = _appConfig.GetChildren().Select(x=>$"{x.Path}={x.Value}").ToArray();
+                    
+                    return context.Response.WriteAsync($"All configs:\n\n{string.Join("\n", configs)}");
+                });
+                endpoints.MapGet("/updateConfig", context =>
+                {
+                    string name = context.Request.Query["name"];
+                    string value = context.Request.Query["value"];
+
+                    bool isRecordExists = !string.IsNullOrEmpty(_exampleConfig[name]);
+
+                    _exampleConfig[name] = value;
+
+                    return context.Response.WriteAsync($"Record {(isRecordExists ? "updated" : "added")}  {name}={value}");
+                });
+                endpoints.MapGet("/deleteConfig", context =>
+                {
+                    string name = context.Request.Query["name"];
+
+                    bool isRecordExists = !string.IsNullOrEmpty(_exampleConfig[name]);
+
+                    if (isRecordExists)
+                    {
+                        _exampleConfig[name] = null;
+                    }
+
+                    return context.Response.WriteAsync($"Record {(isRecordExists ? "deleted" : "not exists")}");
+                });
                 
                 //Замечание при работе с разным жизненным циклом:
                 //Transient:
@@ -357,5 +416,19 @@ namespace CoreApp
 
     /* IHostEnvironment VS IWebHostEnvironment
      * По возможности стоит использовать IHostEnvironment, за исключением тех случаев, когда нужен доступ к WebRootPath или WebRootFileProvider
+     */
+
+    /* Конфигурация приложения
+     * Основные источники:
+     *  - аргументы коммандной строки
+     *  - переменные среды окружения
+     *  - объекты .net в памяти
+     *  - файлы json, xml, ini
+     *  - azure
+     *  - пользовательский поставщик конфигурации
+     *
+     * Часть конфигурации можно передавать как привязку к объекту через IOptions<TOptions>
+     *  см. TokenMiddleware
+     * В ConfigureAppConfiguration в Program можно добавить провайдеры конфигурации
      */
 }
