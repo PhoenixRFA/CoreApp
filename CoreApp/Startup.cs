@@ -36,7 +36,8 @@ namespace CoreApp
                 .AddInMemoryCollection(new Dictionary<string, string>
                 {
                     {"login", "user1"},
-                    {"password", "qwerty"}
+                    {"password", "qwerty"},
+                    {"foobar", "123"}
                 })
                 .Build();
         }
@@ -94,7 +95,9 @@ namespace CoreApp
             services.AddTransient<ServiceUsingExample>();
 
             //Привязка конфига к объекту и внедрение
-            services.Configure<ExampleOptions>(_exampleConfig);
+            //services.Configure<ExampleOptions>(_exampleConfig);
+            services.Configure<ExampleOptions>(_appConfig.GetSection("exampleSection"));
+            //services.Configure<ExampleOptions>("exampleSection", _appConfig);
         }
 
         //В классе Startup могут присутствовать методы вида Configure{EnvironmentName}Services и Configure{EnvironmentName}
@@ -429,6 +432,9 @@ namespace CoreApp
      *
      * Часть конфигурации можно передавать как привязку к объекту через IOptions<TOptions>
      *  см. TokenMiddleware
+     * IOptions - singleton т.е. не считывает измененное значение после запуска приложения,
+     * IOptionsSnapshot - scoped т.е. вычисляется с каждым запросом
+     * IOptionsMonitor - singleton, но всегда передает новое значение, можно подписаться на изменения
      * В ConfigureAppConfiguration в Program можно добавить провайдеры конфигурации
      */
 }

@@ -32,10 +32,10 @@ namespace CoreApp.Middleware
         //Этот метод должен возвращать Task и принимать HttpContext (контекст запроса)
         //Данный метод собственно и будет обрабатывать запрос
         //DI: при внедрении сервиса через Invoke - объект сервиса будет подчиняться жизненному циклу самого сервиса
-        public async Task InvokeAsync(HttpContext context, IMessageSender sender, IOptions<ExampleOptions> options)
+        public async Task InvokeAsync(HttpContext context, IMessageSender sender, IOptions<ExampleOptions> options, IOptionsSnapshot<ExampleOptions> optionsSnapshot, IOptionsMonitor<ExampleOptions> optionsMonitor)
         {
             StringValues token = context.Request.Query["token"];
-
+            
             if (token != _token)
             {
                 //DI: альтернативный способ для внедрения зависимостей. Но он НЕ рекомендуется!

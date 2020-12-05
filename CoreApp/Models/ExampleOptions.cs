@@ -4,5 +4,6 @@
     {
         public string Login { get; set; }
         private string Password { get; set; }
+        public int FooBar { get; set; }
     }
 }
