@@ -98,6 +98,13 @@ namespace CoreApp
             //services.Configure<ExampleOptions>(_exampleConfig);
             services.Configure<ExampleOptions>(_appConfig.GetSection("exampleSection"));
             //services.Configure<ExampleOptions>("exampleSection", _appConfig);
+
+            services.AddDistributedMemoryCache();
+            services.AddSession(opts=>
+            {
+                opts.IdleTimeout = TimeSpan.FromMinutes(10);
+                opts.Cookie.Name = "session_cookie";
+            });
         }
 
         //В классе Startup могут присутствовать методы вида Configure{EnvironmentName}Services и Configure{EnvironmentName}
@@ -194,7 +201,10 @@ namespace CoreApp
             //включаем в конвеер свой компонент middleware
             //app.UseMiddleware<TokenMiddleware>();
             //либо через метод расширения
-            app.UseToken("1234");
+            //app.UseToken("1234");
+
+            //Сессия
+            app.UseSession();
 
             //включаем возможность маршрутизации, например - использование метода UseEndpoints
             app.UseRouting();
@@ -270,7 +280,65 @@ namespace CoreApp
 
                     return context.Response.WriteAsync($"Record {(isRecordExists ? "deleted" : "not exists")}");
                 });
+
+                //Cookies
+                endpoints.MapGet("/getCookie", context =>
+                {
+                    int cookieCount = context.Request.Cookies.Count;
+                    string cookieKeys = string.Join(", ", context.Request.Cookies.Keys);
+                    string myCookie = context.Request.Cookies["myCookie"];
+                    
+                    return context.Response.WriteAsync($"Total cookies: {cookieCount}\nKeys: {cookieKeys}\nMyCookie: {myCookie}");
+                });
+                endpoints.MapGet("/setCookie", context =>
+                {
+                    string name = context.Request.Query["name"];
+                    string value = context.Request.Query["value"];
+                    
+                    context.Response.Cookies.Append(name, value);
+
+                    return context.Response.WriteAsync($"Set cookie: {name}={value}");
+                });
+                endpoints.MapGet("/setCookie2", context =>
+                {
+                    string name = context.Request.Query["name"];
+                    string value = context.Request.Query["value"];
+                    
+                    var cookieOptions = new CookieOptions
+                    {
+                        Path = "/",
+                        MaxAge = TimeSpan.FromDays(2),
+                        Domain = "localhost",
+                        Expires = DateTimeOffset.Now.AddDays(1),
+                        HttpOnly = true,
+                        IsEssential = true,
+                        SameSite = SameSiteMode.Lax,
+                        Secure = true
+                    };
+
+                    context.Response.Cookies.Append(name, value, cookieOptions);
+
+                    return context.Response.WriteAsync($"Set cookie: {name}={value}");
+                });
                 
+                //Session
+                endpoints.MapGet("/getSession", context =>
+                {
+                    bool isSessionAvailable = context.Session.IsAvailable;
+                    string sessionKeys = string.Join(", ", context.Session.Keys);
+                    string sessionID = context.Session.Id;
+                    string foo = context.Session.GetString("foo");
+                    
+                    return context.Response.WriteAsync($"SessionAvailable: {isSessionAvailable}\nKeys: {sessionKeys}\nID: {sessionID}\nfoo: {foo}");
+                });
+                endpoints.MapGet("/setSession", context =>
+                {
+                    string value = context.Request.Query["value"];
+                    context.Session.SetString("foo", value);
+                    
+                    return context.Response.WriteAsync($"Session set");
+                });
+
                 //Замечание при работе с разным жизненным циклом:
                 //Transient:
                 //  в /send и /send2 значение не будет менятся между запросами, но у каждого будет своё значение
@@ -436,5 +504,18 @@ namespace CoreApp
      * IOptionsSnapshot - scoped т.е. вычисляется с каждым запросом
      * IOptionsMonitor - singleton, но всегда передает новое значение, можно подписаться на изменения
      * В ConfigureAppConfiguration в Program можно добавить провайдеры конфигурации
+     */
+
+    /* HttpContext.Items
+     * Коллекция типа IDictionary<object, object>
+     * Сохряняет данные в пределах одного запроса. Когда запрос завершается - данные удаляются
+     */
+
+    /* Сессии
+     * Для подключения нужно подключить сервисы:
+     *      services.AddDistributedMemoryCache();
+     *      services.AddSession();
+     * И middleware:
+     *      app.UseSession();
      */
 }
