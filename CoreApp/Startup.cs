@@ -15,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace CoreApp
 {
@@ -123,9 +124,37 @@ namespace CoreApp
         //  ILoggerFactory      - НЕ обязательный параметр.
         //  в качестве параметров можно передавать любой сервис, зарегистрированный в методе ConfigureServices
         //Выполняется один раз при создании объекта класса Startup
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IMessageSender sender, ServiceUsingExample senderService)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IMessageSender sender, ServiceUsingExample senderService, ILogger<Startup> loger1)
         {
             app.UsePerformanceTimer();
+
+            //Logging example
+            //ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
+            //{
+            //    //вывод информации на консоль
+            //    //builder.AddConsole();
+            //    //вывод информации в окне Output
+            //    builder.AddDebug();
+            //    //логгирование в лог ETW (Event Tracing for Windows)
+            //    //builder.AddEventSourceLogger();
+            //    //записывает в Windows Event Log
+            //    //builder.AddEventLog();
+            //});
+            //ILogger<ExampleOptions> testLogger = loggerFactory.CreateLogger<ExampleOptions>();
+
+            app.Use((context, next) =>
+            {
+                loger1.LogTrace("Trace from loger1");
+                loger1.LogDebug("Debug from loger1");
+                loger1.LogInformation("Info from loger1");
+                loger1.LogWarning("Warning from loger1");
+                loger1.LogError(new Exception("Test exception for logger1"), "Error from loger1");
+                loger1.LogCritical(new EventId(123, "eventID_123"), "Critical from loger1");
+
+                //testLogger.LogInformation("Hello from test logger");
+
+                return next();
+            });
 
             //если проиложение в разработке
             if (env.IsDevelopment())
