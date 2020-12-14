@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CoreApp.Middleware;
 using CoreApp.Models;
 using CoreApp.Services;
+using CoreApp.Services.Loggers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -124,7 +125,7 @@ namespace CoreApp
         //  ILoggerFactory      - НЕ обязательный параметр.
         //  в качестве параметров можно передавать любой сервис, зарегистрированный в методе ConfigureServices
         //Выполняется один раз при создании объекта класса Startup
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IMessageSender sender, ServiceUsingExample senderService, ILogger<Startup> loger1)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IMessageSender sender, ServiceUsingExample senderService, ILogger<Startup> loger1, ILoggerFactory loggerFactory)
         {
             app.UsePerformanceTimer();
 
@@ -142,6 +143,10 @@ namespace CoreApp
             //});
             //ILogger<ExampleOptions> testLogger = loggerFactory.CreateLogger<ExampleOptions>();
 
+            loggerFactory.AddFile(Path.Combine(Directory.GetCurrentDirectory(), "log.txt"));
+            
+            ILogger fileLogger = loggerFactory.CreateLogger("FileLogger");
+
             app.Use((context, next) =>
             {
                 loger1.LogTrace("Trace from loger1");
@@ -152,6 +157,7 @@ namespace CoreApp
                 loger1.LogCritical(new EventId(123, "eventID_123"), "Critical from loger1");
 
                 //testLogger.LogInformation("Hello from test logger");
+                fileLogger.LogInformation("Example log "+DateTime.Now);
 
                 return next();
             });

@@ -3,6 +3,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace CoreApp
 {
@@ -107,6 +108,8 @@ namespace CoreApp
                         {"_custom2", "bar"}
                     });
                 })
+                //Установка минимального уровня логгирования. Применяется если не указан уровень в конфиге
+                .ConfigureLogging(cfg => cfg.SetMinimumLevel(LogLevel.Debug))
                 //создает хост - объект IHost
                 .Build()
                 //у IHost вызывается метод Run
