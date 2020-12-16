@@ -1,0 +1,107 @@
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Development
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Info from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Example log 16.12.2020 21:25:03
+Info from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Example log 16.12.2020 21:25:04
+Info from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Example log 16.12.2020 21:25:31
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Development
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Info from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Example log 16.12.2020 21:29:05
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Development
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Info from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Example log 16.12.2020 21:30:16
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Development
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Info from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Example log 16.12.2020 21:31:07
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Development
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Info from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Example log 16.12.2020 21:31:48
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Development
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Example log 16.12.2020 21:38:52
+Example log 16.12.2020 21:39:28
+Error from loger1
+Critical from loger1
+Example log 16.12.2020 21:39:50
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Development
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Error from loger1
+Critical from loger1
+Example log 16.12.2020 21:40:09
+Error from loger1
+Critical from loger1
+Example log 16.12.2020 21:40:17
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Development
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Info from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Example log 16.12.2020 21:40:45
+Info from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Example log 16.12.2020 21:40:52
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Development
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Info from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Example log 16.12.2020 21:41:24
+Error from loger1
+Critical from loger1
+Example log 16.12.2020 21:42:16
+Info from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Example log 16.12.2020 21:42:29
+Info from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Example log 16.12.2020 21:42:50
+Error from loger1
+Critical from loger1
+Example log 16.12.2020 21:43:12
+Error from loger1
+Critical from loger1
+Example log 16.12.2020 21:43:24

@@ -108,8 +108,14 @@ namespace CoreApp
                         {"_custom2", "bar"}
                     });
                 })
-                //Установка минимального уровня логгирования. Применяется если не указан уровень в конфиге
-                .ConfigureLogging(cfg => cfg.SetMinimumLevel(LogLevel.Debug))
+                //Конфигурацию ведения журналов обычно предоставляет раздел Logging в файлах appsettings.{Environment}.json
+                //Конфигурация логгирования
+                .ConfigureLogging(logging => {
+                    //удаление провайдеров для переопределения
+                    //logging.ClearProviders();
+                    //Установка минимального уровня логгирования. Применяется если не указан уровень в конфиге
+                    logging.SetMinimumLevel(LogLevel.Error);
+                })
                 //создает хост - объект IHost
                 .Build()
                 //у IHost вызывается метод Run
