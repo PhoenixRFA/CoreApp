@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -115,6 +114,27 @@ namespace CoreApp
                     //logging.ClearProviders();
                     //Установка минимального уровня логгирования. Применяется если не указан уровень в конфиге
                     logging.SetMinimumLevel(LogLevel.Error);
+                    
+                    //Реализация кастомного фильтра. НЕ рекомендуется
+                    //logging.AddFilter((provider, category, logLevel) =>
+                    //{
+                    //    if (provider.Contains("ConsoleLoggerProvider")
+                    //        && category.Contains("Controller")
+                    //        && logLevel >= LogLevel.Information)
+                    //    {
+                    //        return true;
+                    //    }
+                    //    else if (provider.Contains("ConsoleLoggerProvider")
+                    //        && category.Contains("Microsoft")
+                    //        && logLevel >= LogLevel.Information)
+                    //    {
+                    //        return true;
+                    //    }
+                    //    else
+                    //    {
+                    //        return false;
+                    //    }
+                    //});
                 })
                 //создает хост - объект IHost
                 .Build()

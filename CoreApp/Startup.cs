@@ -149,15 +149,21 @@ namespace CoreApp
 
             app.Use((context, next) =>
             {
-                loger1.LogTrace("Trace from loger1");
-                loger1.LogDebug("Debug from loger1");
-                loger1.LogInformation("Info from loger1");
-                loger1.LogWarning("Warning from loger1");
-                loger1.LogError(new Exception("Test exception for logger1"), "Error from loger1");
-                loger1.LogCritical(new EventId(123, "eventID_123"), "Critical from loger1");
+                string path = context.Request.Path;
+                string id = context.Request.Query["id"];
 
+                //
+                using (loger1.BeginScope("String format"))
+                {
+                    loger1.LogTrace(100, "Trace from loger1");
+                    loger1.LogDebug("Debug from loger1 {path} id={id}", path, id);
+                    loger1.LogInformation("Info from loger1");
+                    loger1.LogWarning("Warning from loger1");
+                    loger1.LogError(new Exception("Test exception for logger1"), "Error from loger1");
+                    loger1.LogCritical(new EventId(123, "eventID_123"), "Critical from loger1");
+                }
                 //testLogger.LogInformation("Hello from test logger");
-                fileLogger.LogInformation("Example log "+DateTime.Now);
+                fileLogger.LogInformation("[{time}] Example log", DateTime.Now);
 
                 return next();
             });

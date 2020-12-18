@@ -105,3 +105,113 @@ Example log 16.12.2020 21:43:12
 Error from loger1
 Critical from loger1
 Example log 16.12.2020 21:43:24
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Development
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Error from loger1
+Critical from loger1
+Error from loger1
+Critical from loger1
+Error from loger1
+Critical from loger1
+Trace from loger1
+Debug from loger1
+Info from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Example log 17.12.2020 19:15:41
+Now listening on: https://localhost:5001
+Now listening on: http://localhost:5000
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Production
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Warning from loger1
+Error from loger1
+Critical from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Development
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Trace from loger1
+Debug from loger1 / id=(null)
+Info from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Example log 17.12.2020 19:44:12
+Trace from loger1
+Debug from loger1 / id=3007
+Info from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Example log 17.12.2020 19:44:59
+Now listening on: https://localhost:5001
+Now listening on: http://localhost:5000
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Production
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Warning from loger1
+Error from loger1
+Critical from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Now listening on: https://localhost:5001
+Now listening on: http://localhost:5000
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Production
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Application is shutting down...
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Development
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Development
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Trace from loger1
+Debug from loger1 / id=(null)
+Info from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+[12/17/2020 20:06:09] Example log
+Now listening on: https://localhost:5001
+Now listening on: http://localhost:5000
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Production
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Warning from loger1
+Error from loger1
+Critical from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Now listening on: https://localhost:5001
+Now listening on: http://localhost:5000
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Production
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Warning from loger1
+Error from loger1
+Critical from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Now listening on: https://localhost:5001
+Now listening on: http://localhost:5000
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Production
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Warning from loger1
+Error from loger1
+Critical from loger1
