@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CoreApp.Services.Loggers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -134,6 +135,12 @@ namespace CoreApp
                     //    {
                     //        return false;
                     //    }
+                    //});
+
+                    logging.AddFile();
+                    //logging.AddFile(cfg =>
+                    //{
+                    //    cfg.LogsFolderPath = @"C:\Users\Phoenix\source\repos\CoreApp\CoreApp\logs";
                     //});
                 })
                 //создает хост - объект IHost

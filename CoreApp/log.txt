@@ -215,3 +215,23 @@ Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
 Warning from loger1
 Error from loger1
 Critical from loger1
+Now listening on: https://localhost:5001
+Now listening on: http://localhost:5000
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Production
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Warning from loger1
+Error from loger1
+Critical from loger1
+Warning from loger1
+Error from loger1
+Critical from loger1
+Now listening on: https://localhost:5001
+Now listening on: http://localhost:5000
+Application started. Press Ctrl+C to shut down.
+Hosting environment: Production
+Content root path: C:\Users\Phoenix\source\repos\CoreApp\CoreApp
+Warning from loger1
+Error from loger1
+Critical from loger1
+Application is shutting down...

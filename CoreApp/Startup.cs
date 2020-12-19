@@ -8,6 +8,7 @@ using CoreApp.Middleware;
 using CoreApp.Models;
 using CoreApp.Services;
 using CoreApp.Services.Loggers;
+using CoreApp.Services.Loggers.ColorConsole;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -143,7 +144,12 @@ namespace CoreApp
             //});
             //ILogger<ExampleOptions> testLogger = loggerFactory.CreateLogger<ExampleOptions>();
 
-            loggerFactory.AddFile(Path.Combine(Directory.GetCurrentDirectory(), "log.txt"));
+            //loggerFactory.AddFile(Path.Combine(Directory.GetCurrentDirectory(), "log.txt"));
+            loggerFactory.AddProvider(new ColorConsoleLoggerProvider(new ColorConsoleLoggerConfiguration
+            {
+                Color = ConsoleColor.DarkCyan,
+                LogLevel = LogLevel.Warning
+            }));
             
             ILogger fileLogger = loggerFactory.CreateLogger("FileLogger");
 

@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using Microsoft.Extensions.Logging;
 
-namespace CoreApp.Services.Loggers
+namespace CoreApp.Services.Loggers.FileLogger
 {
     public class FileLogger : ILogger
     {
