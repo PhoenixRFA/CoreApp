@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CoreApp.Services.Loggers.FileLogger
 {
+    /// <summary> Предыдушая версия логера. Сейчас основная логика собрана в FileLoggerProvider </summary>
     public class FileLogger : ILogger
     {
         private readonly string _path;

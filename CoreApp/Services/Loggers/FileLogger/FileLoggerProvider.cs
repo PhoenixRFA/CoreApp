@@ -184,7 +184,7 @@ namespace CoreApp.Services.Loggers.FileLogger
         /// <summary> Фоновая запись файла </summary>
         private void ThreadProc()
         {
-            //TODO попробовать реализацию с BackgroundThread. https://github.com/aspnet/Logging/blob/master/src/Microsoft.Extensions.Logging.Console/Internal/ConsoleLoggerProcessor.cs
+            //реализация с BackgroundThread см. LogProcessor
             Task.Run(async () =>
             {
                 while (!_terminated)

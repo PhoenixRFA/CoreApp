@@ -1,14 +1,15 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 
 namespace CoreApp.Services.Loggers.BaseLogger
 {
+    /// <summary> Базовый класс для реализации пользовательского логера </summary>
     public class Logger : ILogger
     {
         public LoggerProvider Provider { get; }
         public string CategoryName { get; }
+
 
         public Logger(LoggerProvider provider, string categoryName)
         {
@@ -16,16 +17,25 @@ namespace CoreApp.Services.Loggers.BaseLogger
             CategoryName = categoryName;
         }
 
+        /// <summary> Начало области логера. Область объединяет несколько логов. Добавляет к ним определенные данные </summary>
         public IDisposable BeginScope<TState>(TState state)
         {
             return Provider.ScopeProvider.Push(state);
         }
 
+        /// <summary> Проверка - доступен ли логгер для данного уровня </summary>
         public bool IsEnabled(LogLevel logLevel)
         {
             return Provider.IsEnabled(logLevel);
         }
 
+        /// <summary> Производит запись лога </summary>
+        /// <typeparam name="TState">The type of the object to be written</typeparam>
+        /// <param name="logLevel">Уровень логов</param>
+        /// <param name="eventId">Идентификатор события</param>
+        /// <param name="state">Сущность лога, м.б. объектом или строкой</param>
+        /// <param name="exception">Объект исключения связанный с этим логом</param>
+        /// <param name="formatter">Функция, которая форматирует <paramref name="state"/> и <paramref name="exception"/>, и возвращает строку </param>
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             if (!IsEnabled(logLevel)) return;
@@ -74,7 +84,7 @@ namespace CoreApp.Services.Loggers.BaseLogger
                     case string _:
                         scopeInfo.Text = scope.ToString();
                         break;
-                    case IEnumerable<KeyValuePair<string, object>> props:
+                    case IEnumerable<KeyValuePair<string, object>> props: 
                     {
                         scopeInfo.Properties ??= new Dictionary<string, object>();
 

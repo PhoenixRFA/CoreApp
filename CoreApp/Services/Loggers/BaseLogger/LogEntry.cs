@@ -8,17 +8,12 @@ namespace CoreApp.Services.Loggers.BaseLogger
     /// <summary> Представляет собой единицу лога </summary>
     public class LogEntry
     {
-        public LogEntry()
-        {
-            TimeStampUtc = DateTime.UtcNow;
-            UserName = Environment.UserName;
-        }
-
         public static readonly string StaticHostName = Dns.GetHostName();
 
-        public string UserName { get; }
+        public string UserName => Environment.UserName;
         public string HostName => StaticHostName;
-        public DateTime TimeStampUtc { get; }
+        public DateTime TimeStampUtc => DateTime.UtcNow;
+
         public string Category { get; set; }
         public LogLevel Level { get; set; }
         public string Text { get; set; }

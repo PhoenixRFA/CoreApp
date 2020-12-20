@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CoreApp.Services.Loggers.FileLogger
 {
+    /// <summary> Объект, отвечающий за конфигурацию логера </summary>
     public class FileLoggerConfiguration
     {
         private string _path;

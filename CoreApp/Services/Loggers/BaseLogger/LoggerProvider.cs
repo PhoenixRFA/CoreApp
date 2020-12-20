@@ -85,7 +85,7 @@ namespace CoreApp.Services.Loggers.BaseLogger
         /// <summary> Хранилище логгеров </summary>
         private readonly ConcurrentDictionary<string, Logger> _loggers = new ConcurrentDictionary<string, Logger>();
         
-        //TODO Что это и зачем?
+        /// <summary> Токен IOptionsMonitor.OnChange Что бы "отписаться" от событий изменения его нужно утилизировать (Dispose) </summary>
         protected IDisposable SettingsChangeToken;
 
         /// <summary> Создание логгера для определенной категории </summary>
@@ -94,9 +94,10 @@ namespace CoreApp.Services.Loggers.BaseLogger
             return _loggers.GetOrAdd(categoryName, name => new Logger(this, categoryName));
         }
 
-        //TODO Что это и зачем?
+        /// <summary> Доступен ли провайдер? </summary>
         public abstract bool IsEnabled(LogLevel logLevel);
-        //TODO Что это и зачем?
+        
+        /// <summary> Метод записи/вывода лога </summary>
         public abstract void WriteLog(LogEntry logEntry);
     }
 }

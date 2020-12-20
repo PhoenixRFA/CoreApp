@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace CoreApp.Services.Loggers.FileLogger
@@ -6,6 +7,6 @@ namespace CoreApp.Services.Loggers.FileLogger
     /// <summary> Позволяет управлять настройкой FileLoggerConfiguration через appsettings.json </summary>
     public class FileLoggerConfigurationSetup : ConfigureFromConfigurationOptions<FileLoggerConfiguration>
     {
-        public FileLoggerConfigurationSetup(IConfiguration config) : base(config) { }
+        public FileLoggerConfigurationSetup(ILoggerProviderConfiguration<FileLoggerProvider> config) : base(config.Configuration) { }
     }
 }

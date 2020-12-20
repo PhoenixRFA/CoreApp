@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using CoreApp.Services.Loggers;
+using CoreApp.Services.Loggers.FileLogger;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
