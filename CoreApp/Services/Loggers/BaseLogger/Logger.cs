@@ -93,6 +93,7 @@ namespace CoreApp.Services.Loggers.BaseLogger
                             scopeInfo.Properties[key] = value;
                         }
 
+                        scopeInfo.Text = scope.ToString();
                         break;
                     }
                 }

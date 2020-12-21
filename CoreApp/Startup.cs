@@ -158,7 +158,6 @@ namespace CoreApp
                 string path = context.Request.Path;
                 string id = context.Request.Query["id"];
 
-                //
                 using (loger1.BeginScope("String format"))
                 {
                     loger1.LogTrace(100, "Trace from loger1");
@@ -170,6 +169,15 @@ namespace CoreApp
                 }
                 //testLogger.LogInformation("Hello from test logger");
                 fileLogger.LogInformation("[{time}] Example log", DateTime.Now);
+
+                //performance example
+                using (loger1.ScopeExample(123))
+                {
+                    loger1.WithoutParameters();
+                    loger1.OneParameter(100);
+                    loger1.TwoParameters("Foo-string", 777);
+                    loger1.WithException(333, new Exception("Test exception"));
+                }
 
                 return next();
             });
