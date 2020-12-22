@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,7 @@ using CoreApp.Services.Loggers.ColorConsole;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -128,6 +130,27 @@ namespace CoreApp
         //Выполняется один раз при создании объекта класса Startup
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IMessageSender sender, ServiceUsingExample senderService, ILogger<Startup> loger1, ILoggerFactory loggerFactory)
         {
+            #region RouterMiddleware
+            //Пример настройки роутера
+
+            var routeHandler = new RouteHandler(async context =>
+            {
+                await context.Response.WriteAsync("Router middleware example");
+            });
+
+            var routeBuilder = new RouteBuilder(app, routeHandler);
+
+            routeBuilder.MapRoute("default", "{controller}/{action}");
+
+            app.UseRouter(routeBuilder.Build());
+
+            app.Run(async context =>
+            {
+                await context.Response.WriteAsync("Route miss");
+            });
+
+            #endregion
+
             app.UsePerformanceTimer();
 
             //Logging example
@@ -263,6 +286,29 @@ namespace CoreApp
 
             //включаем возможность маршрутизации, например - использование метода UseEndpoints
             app.UseRouting();
+
+            //Endpoints
+            app.Use(async (context, next) =>
+            {
+                Endpoint endpoint = context.GetEndpoint();
+
+                if (endpoint != null)
+                {
+                    //RouteEndpoint представляет дополнительные данные по маршруту (RoutePattern и Order)
+                    string routePattern = (endpoint as RouteEndpoint)?.RoutePattern?.RawText;
+
+                    Debug.WriteLine($"Endpoint name: {endpoint.DisplayName}");
+                    Debug.WriteLine($"Route pattern: {routePattern}");
+
+                    await next();
+                }
+                else
+                {
+                    Debug.WriteLine("Endpoint: null");
+
+                    await context.Response.WriteAsync("Endpoint is not defined!");
+                }
+            });
 
             //! Компоненты middleware создаются один раз и живут в течение всего жизненного цикла приложения
             //т.е. значение x не будет сбрасываться между запросами
@@ -472,7 +518,7 @@ namespace CoreApp
             context.Response.ContentType = "text/html;charset=utf-8";
             await context.Response.WriteAsync(sb.ToString());
         }
-}
+    }
 
     public class StartupDevelopment
     {
