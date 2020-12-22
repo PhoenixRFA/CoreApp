@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -135,12 +136,49 @@ namespace CoreApp
 
             var routeHandler = new RouteHandler(async context =>
             {
-                await context.Response.WriteAsync("Router middleware example");
+                //получение данных маршрута
+                RouteData routeData = context.GetRouteData();
+
+                string s = "";
+                foreach(KeyValuePair<string, object> item in routeData.Values)
+                {
+                    s += $" {item.Key}={item.Value};";
+                }
+
+                //получение данных маршрута по ключу
+                object id = context.GetRouteValue("id");
+
+                await context.Response.WriteAsync("Router middleware example " + s + $" {(id == null ? string.Empty : id)}");
             });
 
             var routeBuilder = new RouteBuilder(app, routeHandler);
 
-            routeBuilder.MapRoute("default", "{controller}/{action}");
+            //пример использовани€ midleware
+            routeBuilder.MapMiddlewareGet("middleware/{action}", middl =>
+            {
+                middl.Run(async context => await context.Response.WriteAsync("middleware example"));
+            });
+            
+            //пример использовани€ произвольного метода
+            routeBuilder.MapVerb("GET", "test/{action}/{id?}", async (request, response, route) => {
+                await response.WriteAsync("MapVerbExample");
+            });
+
+            //пример использвани€ расширени€ дл€ Post метода
+            routeBuilder.MapPost("test/{action}", async context => {
+                await context.Response.WriteAsync("POST: test/");
+            });
+
+            //ѕример именованого маршрута (отработает routeHandler)
+            routeBuilder.MapRoute("default", @"{controller:regex(^H.*)=home}/{action:alpha:minlength(3)=index}/{id:regex(\d+)?}");
+            //routeBuilder.MapRoute("default",
+            //    "{controller}/{action}/{id?}",
+            //    new { controller = "home", action = "index" },                                            //пример комбинации ограничений
+            //    new { httpMethod = new HttpMethodRouteConstraint("GET"), controller = "^H.*", id = @"\d+", action = new CompositeRouteConstraint(new IRouteConstraint[]{
+            //        new AlphaRouteConstraint(),
+            //        new MinLengthRouteConstraint(3)
+            //})});
+            //Microsoft.AspNetCore.Routing.Constraints.* - дополнительные огранични€
 
             app.UseRouter(routeBuilder.Build());
 
