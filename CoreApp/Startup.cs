@@ -131,7 +131,7 @@ namespace CoreApp
         //Выполняется один раз при создании объекта класса Startup
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IMessageSender sender, ServiceUsingExample senderService, ILogger<Startup> loger1, ILoggerFactory loggerFactory)
         {
-            #region RouterMiddleware
+            #region RouterMiddleware - система маршрутищации из пред. версий
             //Пример настройки роутера
 
             var routeHandler = new RouteHandler(async context =>
@@ -324,30 +324,7 @@ namespace CoreApp
 
             //включаем возможность маршрутизации, например - использование метода UseEndpoints
             app.UseRouting();
-
-            //Endpoints
-            app.Use(async (context, next) =>
-            {
-                Endpoint endpoint = context.GetEndpoint();
-
-                if (endpoint != null)
-                {
-                    //RouteEndpoint представляет дополнительные данные по маршруту (RoutePattern и Order)
-                    string routePattern = (endpoint as RouteEndpoint)?.RoutePattern?.RawText;
-
-                    Debug.WriteLine($"Endpoint name: {endpoint.DisplayName}");
-                    Debug.WriteLine($"Route pattern: {routePattern}");
-
-                    await next();
-                }
-                else
-                {
-                    Debug.WriteLine("Endpoint: null");
-
-                    await context.Response.WriteAsync("Endpoint is not defined!");
-                }
-            });
-
+            
             //! Компоненты middleware создаются один раз и живут в течение всего жизненного цикла приложения
             //т.е. значение x не будет сбрасываться между запросами
             int x = 1;

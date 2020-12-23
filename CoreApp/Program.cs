@@ -88,7 +88,8 @@ namespace CoreApp
                 //производится инициализация веб-сервера для развертывания веб-приложения
                 {
                     //устанавливается стартовый класс приложения - класс Startup, с которого и будет начинаться обработка входящих запросов
-                    webBuilder.UseStartup<Startup>();
+                    //webBuilder.UseStartup<Startup>();
+                    webBuilder.UseStartup<RoutingStartup>();
                     
                     //либо можно использовать метод UseStartup(IWebHostBuilder, String)
                     //и тогда вместо Startup будет использоваться Startup{EnvironmentName}, (например StartupDevelopment)
