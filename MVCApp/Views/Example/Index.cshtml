@@ -1,9 +1,60 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using Microsoft.Extensions.Logging
+@model string
 @{
+    ViewData["Foo"] = "FooValue";
+    ViewBag.Bar = 123;
+}
+@section Scripts{
+    <script>console.log('Hello');</script>
+}
+@functions{
+    @*Похоже, модификатор доступа тут не играет роли*@
+    public int GetThree() => 3;
+    private int _getFour() => 4;
 }
 <div class="text-center">
     <h1 class="">Example controller</h1>
     <p>Go <a href="/">Home</a></p>
+
+    @*Похоже, модификатор доступа тут не играет роли*@
+    GetThree() = @GetThree()
+    <br />
+    _getFour() = @_getFour()
+    <br /><br />
+    ViewBag like ViewData
+    <br />
+    ViewBag.Foo = @ViewBag.Foo
+    <br />
+    ViewData["Foo"] = @ViewData["Foo"]
+    <br />
+    ViewData["Bar"] = @ViewData["bar"]
+    <br /><br />
+    Model = @Model
+    <br /><br />
+    Tempdata keep data between requests. Until data will be extracted
+    <br />
+    TempData["foo"] = @TempData["foo"]
+    <br />
+    TempData["bar"] = @TempData["bar"]
+    <br /><br />
+    ViewBag.Test = @ViewBag.Test
 </div>
+
+@{
+    ViewData["partial"] = "Data from ViewData";
+}
+@*Вставка частичного представления (асинхронная)*@       @* В представление можно передать измененный объект ViewData. При чем изменения коснутся только ViewData частичного представления *@
+@await Html.PartialAsync("_SomePartial", "PartialAsync", new ViewDataDictionary(ViewData)
+{
+    {"partial-new", "New data from ViewData"}
+})
+@*По-идее более производительная версия*@
+@{ await Html.RenderPartialAsync("_SomePartial", "RenderPartialAsync");}
+
+
+@* В представление можно внедрять зависимости *@
+@inject ILogger<MVCApp.Controllers.ExampleController> _logger;
+@{
+    @* Но мне кажется, что это не лучшая идея *@
+    _logger.LogInformation("Hello from Example.Index view");
+}

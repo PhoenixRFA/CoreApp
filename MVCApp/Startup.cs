@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MVCApp.Constraints;
 
 namespace MVCApp
 {
@@ -17,8 +19,11 @@ namespace MVCApp
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<RouteOptions>(opts =>
+            {
+                opts.ConstraintMap.Add("myExists", typeof(MyKnownRouteValueConstraint));
+            });
             services.AddControllersWithViews();
-            
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -43,6 +48,11 @@ namespace MVCApp
 
             app.UseEndpoints(endpoints =>
             {
+                //ћаршрутизаци€ областей: (работают все три варианта)
+                //endpoints.MapControllerRoute("cabinet", "{area:myExists}/{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapAreaControllerRoute("cabinet", "Cabinet", "{area:myExists}/{controller=Home}/{action=Index}/{id?}");
+                //endpoints.MapAreaControllerRoute("cabinet", "Cabinet", "cabinet/{controller=Home}/{action=Index}/{id?}");//полезно, если маршрут не совпадает с названием области
+
                 endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
             });
         }

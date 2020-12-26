@@ -11,6 +11,8 @@ using Microsoft.Net.Http.Headers;
 
 namespace MVCApp.Controllers
 {
+    //С помощью аттрибута Route - можно задать альтернативный путь к контроллеру/действию
+    [Route("Example")]
     public class ExampleController : Controller
     {
         private readonly ILogger<ExampleController> _logger;
@@ -19,12 +21,31 @@ namespace MVCApp.Controllers
         {
             _logger = logger;
         }
-
+         
+        [Route("")]
+        [Route("Index")]
         public IActionResult Index()
         {
-            return View();
+            string model = "Model is string";
+
+            if (!TempData.ContainsKey("foo"))
+            {
+                TempData["foo"] = "Foo " + DateTime.Now;
+            }
+
+            TempData["bar"] = "Bar";
+            
+            return View(model: model);
         }
         
+        public string GetTemp() => TempData["temp"]?.ToString() ?? "null";
+        public string SetTemp(string id)
+        {
+            TempData["temp"] = id;
+            return "ok";
+        }
+
+
         [ActionName("String")]
         public string GetString() => "String result";
 
