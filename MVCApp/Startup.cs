@@ -5,6 +5,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MVCApp.Constraints;
+using MVCApp.Middleware;
+using MVCApp.Models;
+using MVCApp.Services;
 
 namespace MVCApp
 {
@@ -19,6 +22,13 @@ namespace MVCApp
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddTransient<IDateTimeService, DateTimeService>();
+            services.AddScoped<IRequestStoreService, RequestStoreService>();
+            services.AddSingleton<IApplicationService, ApplicationService>(provider => new ApplicationService("MVC Test Application"));
+
+            services.Configure<SomeSettings>(Configuration.GetSection("SomeSettings"));
+
+
             services.Configure<RouteOptions>(opts =>
             {
                 opts.ConstraintMap.Add("myExists", typeof(MyKnownRouteValueConstraint));
@@ -28,6 +38,11 @@ namespace MVCApp
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseMiddleware<PerformanceMiddleware>();
+
+            app.UseMiddleware<RequestStoreTestMiddleware>();
+
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -48,12 +63,12 @@ namespace MVCApp
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
+
                 //ћаршрутизаци€ областей: (работают все три варианта)
                 //endpoints.MapControllerRoute("cabinet", "{area:myExists}/{controller=Home}/{action=Index}/{id?}");
-                endpoints.MapAreaControllerRoute("cabinet", "Cabinet", "{area:myExists}/{controller=Home}/{action=Index}/{id?}");
+                //endpoints.MapAreaControllerRoute("cabinet", "Cabinet", "{area:myExists}/{controller=Home}/{action=Index}/{id?}");
                 //endpoints.MapAreaControllerRoute("cabinet", "Cabinet", "cabinet/{controller=Home}/{action=Index}/{id?}");//полезно, если маршрут не совпадает с названием области
-
-                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }

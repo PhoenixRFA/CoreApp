@@ -3,27 +3,50 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
+using MVCApp.Models;
+using MVCApp.Services;
 
 namespace MVCApp.Controllers
 {
     //С помощью аттрибута Route - можно задать альтернативный путь к контроллеру/действию
-    [Route("Example")]
+    //[Route("Example")]
     public class ExampleController : Controller
     {
         private readonly ILogger<ExampleController> _logger;
+        private readonly IRequestStoreService _requestStore;
+        private readonly IApplicationService _app;
+        private readonly IDateTimeService _dt;
 
-        public ExampleController(ILogger<ExampleController> logger)
+        private readonly IOptions<SomeSettings> _opts;
+        private readonly IOptionsSnapshot<SomeSettings> _optsSnapshot;
+        private readonly IOptionsMonitor<SomeSettings> _optsMonitor;
+
+        public ExampleController(ILogger<ExampleController> logger, IApplicationService application, IRequestStoreService requestStore, IDateTimeService dateTime, IOptions<SomeSettings> options, IOptionsSnapshot<SomeSettings> optionsSnapshot, IOptionsMonitor<SomeSettings> optionsMonitor)
         {
             _logger = logger;
+            _requestStore = requestStore;
+            _app = application;
+            _dt = dateTime;
+
+            _opts = options;
+            _optsSnapshot = optionsSnapshot;
+            _optsMonitor = optionsMonitor;
+
+            _optsMonitor.OnChange((opt, s) =>
+            {
+                _logger.LogInformation("Config {ConfigName} was changed ({DateTime}). {Additional}", opt.GetType().Name, DateTime.Now, s);
+            });
         }
-         
-        [Route("")]
-        [Route("Index")]
+
+        //[Route("")]
+        //[Route("Index")]
         public IActionResult Index()
         {
             string model = "Model is string";
@@ -43,6 +66,38 @@ namespace MVCApp.Controllers
         {
             TempData["temp"] = id;
             return "ok";
+        }
+
+        public string DiTest()
+        {
+            _logger.LogInformation("Executed ExampleController.DiTest ({Date})", _dt.GetDateTime());
+            return $"AppInfo: {_app.Name},{_app.ServerName} ({_app.Started})\n\rRequset ID: {_requestStore.Get("id")}\n\rWeek Start: {_dt.GetWeekStart()}\tToday: {_dt.GetDate()}\tWeek End: {_dt.GetWeekEnd()}";
+        }
+
+        public string ConfigurationTest()
+        {
+            _logger.LogInformation("Executed ExampleController.ConfigurationTest ({Date})", _dt.GetDateTime());
+            return $"Options: {_opts.Value.Bar}, {_opts.Value.Foo}\n\rOptions Snapshot: {_optsSnapshot.Value.Bar}, {_optsSnapshot.Value.Foo}\n\rOptions Monitor: {_optsMonitor.CurrentValue.Bar}, {_optsMonitor.CurrentValue.Foo}";
+        }
+        
+        public IActionResult GetCookies()
+        {
+            return Content(string.Join(", ", Request.Cookies.Keys));
+        }
+        
+        //GET: /example/getcookie/session_cookie
+        [HttpGet("{controller}/GetCookie/{name}")]
+        public IActionResult GetCookie(string name)
+        {
+            string cookie = Request.Cookies[name];
+            return Content(cookie);
+        }
+        //ANY: /example/setcookie/session_cookie/asdasd
+        [Route("example/setCookie/{name}/{value}")]
+        public IActionResult SetCookie(string name, string value)
+        {
+            Response.Cookies.Append(name, value);
+            return RedirectToAction("GetCookies");
         }
 
 
@@ -126,7 +181,7 @@ namespace MVCApp.Controllers
             //подобно OnActionExecuting
             Debug.WriteLine("OnActionExecutionAsync Before");
 
-            if ((string) context.RouteData.Values["action"] == "Forbidden")
+            if ((string)context.RouteData.Values["action"] == "Forbidden")
             {
                 _logger.LogInformation("Access to Forbidden");
                 context.Result = new UnauthorizedResult();
