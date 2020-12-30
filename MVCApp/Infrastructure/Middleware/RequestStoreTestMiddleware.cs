@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using MVCApp.Services;
 
-namespace MVCApp.Middleware
+namespace MVCApp.Infrastructure.Middleware
 {
     public class RequestStoreTestMiddleware
     {

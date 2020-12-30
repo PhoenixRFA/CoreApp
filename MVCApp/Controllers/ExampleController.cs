@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
+using MVCApp.Infrastructure.ValueProviders;
 using MVCApp.Models;
 using MVCApp.Services;
 
@@ -98,6 +99,32 @@ namespace MVCApp.Controllers
         {
             Response.Cookies.Append(name, value);
             return RedirectToAction("GetCookies");
+        }
+
+
+        public IActionResult GetSessionData()
+        {
+            return Content(string.Join(", ", HttpContext.Session.Keys));
+        }
+
+        public IActionResult GetSession(string name)
+        {
+            string res = HttpContext.Session.GetString(name);
+            return Content(res);
+        }
+        public IActionResult SetSession(string name, string value)
+        {
+            HttpContext.Session.SetString(name, value);
+            return RedirectToAction("GetSessionData");
+        }
+
+        public string ValueProviderTest([FromCookie(Name = "cookie_test")] string cookieTest)
+        {
+            return $"ValueProviderTest: cookie_test = {cookieTest}";
+        }
+        public string ModelBinderTest(/*[FromCookie(Name = "date")]*/ DateTime dateTime)
+        {
+            return $"ModelBinderTest: DateTime = {dateTime}";
         }
 
 

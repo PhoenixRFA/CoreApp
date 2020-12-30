@@ -1,11 +1,19 @@
+using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MVCApp.Constraints;
-using MVCApp.Middleware;
+using Microsoft.Extensions.Logging;
+using MVCApp.Infrastructure.Constraints;
+using MVCApp.Infrastructure.Middleware;
+using MVCApp.Infrastructure.ModelBinders;
+using MVCApp.Infrastructure.ValueProviders;
 using MVCApp.Models;
 using MVCApp.Services;
 
@@ -33,14 +41,39 @@ namespace MVCApp
             {
                 opts.ConstraintMap.Add("myExists", typeof(MyKnownRouteValueConstraint));
             });
-            services.AddControllersWithViews();
+            services.AddControllersWithViews(opts =>
+            {
+                opts.ValueProviderFactories.Add(new CookieValueProviderFactory());
+                opts.ModelBinderProviders.Insert(0, new CustomDateTimeModelBinderProvider());
+            });
+
+            services.AddDistributedMemoryCache();
+            services.AddSession();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
             app.UseMiddleware<PerformanceMiddleware>();
 
             app.UseMiddleware<RequestStoreTestMiddleware>();
+
+            app.UseSession();
+
+            app.Use(async (context, next) =>
+            {
+                if (!context.Session.IsAvailable)
+                {
+                    logger.LogWarning("Session is NOT awailable");
+                    await next();
+                    return;
+                }
+
+                if (!context.Session.Keys.Contains("_myVal"))
+                {
+                    context.Session.SetString("_myVal", "fooBar");
+                }
+                await next();
+            });
 
 
             if (env.IsDevelopment())
