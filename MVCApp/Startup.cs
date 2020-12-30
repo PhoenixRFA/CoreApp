@@ -45,7 +45,7 @@ namespace MVCApp
             {
                 opts.ValueProviderFactories.Add(new CookieValueProviderFactory());
                 opts.ModelBinderProviders.Insert(0, new CustomDateTimeModelBinderProvider());
-            });
+            });//.AddRazorRuntimeCompilation();
 
             services.AddDistributedMemoryCache();
             services.AddSession();
@@ -100,8 +100,10 @@ namespace MVCApp
 
                 //ћаршрутизаци€ областей: (работают все три варианта)
                 //endpoints.MapControllerRoute("cabinet", "{area:myExists}/{controller=Home}/{action=Index}/{id?}");
-                //endpoints.MapAreaControllerRoute("cabinet", "Cabinet", "{area:myExists}/{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapAreaControllerRoute("cabinet", "Cabinet", "{area:myExists}/{controller=Home}/{action=Index}/{id?}");
                 //endpoints.MapAreaControllerRoute("cabinet", "Cabinet", "cabinet/{controller=Home}/{action=Index}/{id?}");//полезно, если маршрут не совпадает с названием области
+
+                endpoints.MapControllerRoute("test", "testLink{foo}-{bar}", new { controller = "Home", action = "Index"});
             });
         }
     }

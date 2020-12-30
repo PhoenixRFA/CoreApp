@@ -1,0 +1,20 @@
+﻿@using MVCApp.App_code
+@model HelpersIndexViewModel
+@{
+
+}
+
+<h1>Html helpers sandbox 1</h1>
+
+<h3>CreateList helper</h3>
+@Html.CreateList(Model.Values)
+
+<h3>CreateListOnTagBuilders helper</h3>
+@Html.CreateListOnTagBuilders(Model.Values)
+
+<h3>Links</h3>
+<p>Url.Action @Url.Action("Index", "Example", new { id = 123, name = "foo" }) <a href="@Url.Action("Index", "Example", new { id = 123, name = "foo" })">Link</a></p>
+<p>Url.Action (with area) @Url.Action("Index", "Home", new { area = "Cabinet" }) <a href="@Url.Action("Index", "Home", new { area = "Cabinet" })">Link</a></p>
+<p>Url.RouteUrl @Url.RouteUrl("test", new { foo = "foo", bar = "bar" }) <a href="@Url.RouteUrl("test", new { foo = "foo", bar = "bar" })">Link</a></p>
+<p>Url.Content @Url.Content("~/lib/jquery-validation-unobtrusive/LICENSE.txt") <a href="@Url.Content("~/lib/jquery-validation-unobtrusive/LICENSE.txt")">Link</a></p>
+<p>Raw ~/lib/jquery-validation-unobtrusive/LICENSE.txt <a href="~/lib/jquery-validation-unobtrusive/LICENSE.txt">Link</a></p>
