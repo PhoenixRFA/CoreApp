@@ -2,7 +2,7 @@
 
 namespace MVCApp.Areas.Cabinet.Controllers
 {
-    [Area("cabinet")]
+    [Area("Cabinet")]
     public class HomeController : Controller
     {
         public IActionResult Index()

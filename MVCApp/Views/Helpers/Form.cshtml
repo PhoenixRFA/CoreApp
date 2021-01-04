@@ -1,0 +1,15 @@
+﻿@{
+    ViewBag.Title = "Form";
+}
+
+<h1>Validation</h1>
+<form asp-action="FormTarget" asp-antiforgery="false" method="post">
+    <input name="name" placeholder="Name" /><br />
+    <input name="surname" placeholder="Surname" /><br />
+    <input name="email" type="email" placeholder="Email" /><br />
+    <input name="phone" type="tel" placeholder="Phone" /><br />
+    <input name="age" type="number" placeholder="Age" /><br />
+    <input name="password" type="password" placeholder="Password" /><br />
+    <input name="repeatpassword" type="password" placeholder="Repeat password" /><br />
+    <button type="submit">Send</button>
+</form>

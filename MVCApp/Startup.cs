@@ -96,12 +96,13 @@ namespace MVCApp
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
-
                 //Маршрутизация областей: (работают все три варианта)
-                //endpoints.MapControllerRoute("cabinet", "{area:myExists}/{controller=Home}/{action=Index}/{id?}");
-                endpoints.MapAreaControllerRoute("cabinet", "Cabinet", "{area:myExists}/{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapControllerRoute("areas", "{area:myExists}/{controller=Home}/{action=Index}/{id?}");
+                //MapAreaControllerRoute лучше использовать для определенных областей и маршрутов, для стандартного маршрута лучше использовать MapControllerRoute
+                //endpoints.MapAreaControllerRoute("cabinet", "Cabinet", "{area:myExists}/{controller=Home}/{action=Index}/{id?}");
                 //endpoints.MapAreaControllerRoute("cabinet", "Cabinet", "cabinet/{controller=Home}/{action=Index}/{id?}");//полезно, если маршрут не совпадает с названием области
+
+                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
 
                 endpoints.MapControllerRoute("test", "testLink{foo}-{bar}", new { controller = "Home", action = "Index"});
             });

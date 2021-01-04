@@ -1,0 +1,93 @@
+﻿@*addTagHelper MVCApp.Infrastructure.TagHelpers.DateTimeTagHelper, MVCApp*@
+@*addTagHelper MVCApp.Infrastructure.TagHelpers.*, MVCApp*@
+@addTagHelper MVCApp.Infrastructure.TagHelpers.*, MVCApp
+@using Microsoft.Extensions.Caching.Memory
+@model MVCApp.Controllers.FormModel
+@{
+    ViewData["title"] = "Tag helpers";
+}
+
+<h1>Tag helpers</h1>
+
+
+<h2>AnchorTagHelper</h2>
+<a asp-controller="Home" asp-action="Index">Go Home</a>
+<p>&lt;a asp-controller="Home" asp-action="Index"&gt;Go Home&lt;/a&gt;</p>
+
+<a asp-controller="Home" asp-area="cabinet" asp-action="Index">Cabinet area</a>
+<p>&lt;a asp-controller="Home" asp-area="cabinet" asp-action="Index"&gt;Cabinet area&lt;/a&gt;</p>
+
+<a asp-route="test" asp-route-foo="fooval" asp-route-bar="123">Route link</a>
+<p>&lt;a asp-route="test" asp-route-foo="fooval" asp-route-bar="123"&gt;Cabinet area&lt;/a&gt;</p>
+
+
+<h2>LinkTagHelper/ScriptTagHelper</h2>
+<!--asp-append-version-->
+<script src="js/site.js" asp-append-version="true"></script>
+<!--asp-src-include (multiple sources include)-->
+<script asp-src-include="js/**/*.js"></script>
+<!--asp-src-include (multiple sources include with exclude)-->
+<script asp-src-include="js/scripts/script*.js" asp-src-exclude="js/**/*3.js"></script>
+<!--asp-src-include (multiple sources => script?.js)-->
+<script asp-src-include="js/scripts/script?1.js"></script>
+
+
+<h2>FormTagHelper</h2>
+<form asp-action="FormTarget" asp-controller="Helpers" asp-antiforgery="true">
+    <div>
+        <label>Name:</label>
+        <input name="name" placeholder="Name" />
+        @*<label asp-for="Name"></label>
+            <input asp-for="Name"/>*@
+    </div>
+    <div>
+        @*<label>Surname:</label>
+            <input name="surname" placeholder="Surname"/>*@
+        <label asp-for="Surname"></label>
+        <input asp-for="Surname" />
+    </div>
+    <div>
+        <button type="submit">Submit</button>
+    </div>
+</form>
+
+
+<h2>EnvironmentTagHelper</h2>
+<environment names="Development">
+    <p>Environment Dev</p>
+    <link href="css/site.css?environment=dev" />
+</environment>
+<environment names="Production">
+    <p>Environment Prod</p>
+    <link href="css/site.css?environment=prod" />
+</environment>
+
+
+<h2>CacheTagHelper</h2>
+<partial name="_TimePartial" />
+@*Uses MemoryCache*@
+
+@*Expires variants*@
+<cache expires-after="TimeSpan.FromMinutes(10)"><p>Cached (Expires after: @TimeSpan.FromMinutes(10))</p><partial name="_TimePartial" /></cache>
+<cache expires-on="DateTime.Now.AddMinutes(10)"><p>Cached (Expires after: @DateTime.Now.AddMinutes(10))</p><partial name="_TimePartial" /></cache>
+<cache expires-sliding="TimeSpan.FromMinutes(10)"><p>Cached (Expires after: @TimeSpan.FromMinutes(10) from last visit)</p><partial name="_TimePartial" /></cache>
+
+@*vary-by variants*@
+<cache expires-after="TimeSpan.FromMinutes(10)" vary-by-user="true"><p>Cached (Expires after: @TimeSpan.FromMinutes(10) vary by user)</p><partial name="_TimePartial" /></cache>
+<cache expires-after="TimeSpan.FromMinutes(10)" vary-by-route="id"><p>Cached (Expires after: @TimeSpan.FromMinutes(10) vary by route value: id)</p><partial name="_TimePartial" /></cache>
+<cache expires-after="TimeSpan.FromMinutes(10)" vary-by-query="id"><p>Cached (Expires after: @TimeSpan.FromMinutes(10) vary by query value: id)</p><partial name="_TimePartial" /></cache>
+<cache expires-after="TimeSpan.FromMinutes(10)" vary-by-cookie="test"><p>Cached (Expires after: @TimeSpan.FromMinutes(10) vary by cookie: test)</p><partial name="_TimePartial" /></cache>
+<cache expires-after="TimeSpan.FromMinutes(10)" vary-by-header="test"><p>Cached (Expires after: @TimeSpan.FromMinutes(10) vary by header: test)</p><partial name="_TimePartial" /></cache>
+<cache expires-after="TimeSpan.FromMinutes(10)" vary-by="@ViewBag.CacheId"><p>Cached (Expires after: @TimeSpan.FromMinutes(10) vary by ViewBag.CacheId)</p><partial name="_TimePartial" /></cache>
+
+@*priority*@
+<cache expires-on="DateTime.Now.AddMinutes(10)" priority="CacheItemPriority.Low"><p>Cached (Priority: Low)</p><partial name="_TimePartial" /></cache>
+<cache expires-on="DateTime.Now.AddMinutes(10)" priority="CacheItemPriority.Normal"><p>Cached (Priority: Normal - default)</p><partial name="_TimePartial" /></cache>
+<cache expires-on="DateTime.Now.AddMinutes(10)" priority="CacheItemPriority.High"><p>Cached (Priority: High)</p><partial name="_TimePartial" /></cache>
+<cache expires-on="DateTime.Now.AddMinutes(10)" priority="CacheItemPriority.NeverRemove"><p>Cached (Priority: NeverRemove)</p><partial name="_TimePartial" /></cache>
+
+
+<h2>CustomTagHelper</h2>
+
+<timer data-foo="123" asp-test="bar" asp-size="24px" color="#f0f" enabled="false"><b>Bold</b></timer>
+<p>&lt;timer&gt;&lt;/timer&gt;</p>
