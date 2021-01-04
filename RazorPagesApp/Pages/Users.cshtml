@@ -1,0 +1,23 @@
+﻿@page "{id}"
+@*@page "{id}/{name}/{age}"*@
+@model RazorPagesApp.Pages.UsersModel
+@{
+    ViewData["Title"] = "Users";
+}
+
+<h4>Users list</h4>
+<ul>
+    @foreach (var user in Model.Users)
+    {
+        <li><a asp-page="Users" asp-page-handler="byName" asp-route-name="@user.Name"><b>@user.Name</b></a> - @user.Age</li>
+    }
+</ul>
+
+<h2 style="@(Model.IsCorrect ? "" : "color: red;")">@Model.Message</h2>
+<form method="post">
+    <label asp-for="Person.Name"></label><br />
+    <input type="text" asp-for="Person.Name" value="@Model.Person?.Name"/><br /><br />
+    <label asp-for="Person.Age"></label><br />
+    <input type="number" asp-for="Person.Age" value="@Model.Person?.Age" /><br /><br />
+    <input type="submit" value="Process" />
+</form>

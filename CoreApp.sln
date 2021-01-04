@@ -14,7 +14,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NLogExample", "NLogExample\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SerilogExample", "SerilogExample\SerilogExample.csproj", "{AFB3300F-0EAB-4D1F-A4B8-8B9230A1A868}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVCApp", "MVCApp\MVCApp.csproj", "{04EC20B4-9D01-4F75-87FA-34D3D37BB1B5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MVCApp", "MVCApp\MVCApp.csproj", "{04EC20B4-9D01-4F75-87FA-34D3D37BB1B5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorPagesApp", "RazorPagesApp\RazorPagesApp.csproj", "{33DA8C7B-3EAE-4A35-B6FC-D5297F6EE64A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +40,10 @@ Global
 		{04EC20B4-9D01-4F75-87FA-34D3D37BB1B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{04EC20B4-9D01-4F75-87FA-34D3D37BB1B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{04EC20B4-9D01-4F75-87FA-34D3D37BB1B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33DA8C7B-3EAE-4A35-B6FC-D5297F6EE64A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33DA8C7B-3EAE-4A35-B6FC-D5297F6EE64A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33DA8C7B-3EAE-4A35-B6FC-D5297F6EE64A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33DA8C7B-3EAE-4A35-B6FC-D5297F6EE64A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

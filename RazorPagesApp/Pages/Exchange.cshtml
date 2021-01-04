@@ -1,0 +1,11 @@
+﻿@page
+@model RazorPagesApp.Pages.ExchangeModel
+@{
+    ViewData["Title"] = "Exchange";
+}
+
+<h2>@Model.Message</h2>
+<form method="post">
+    <input name="sum" type="number" placeholder="Sum in RUB"/>
+    <button type="submit">Process</button>
+</form>
