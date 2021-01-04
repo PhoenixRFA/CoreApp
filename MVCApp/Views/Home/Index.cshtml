@@ -1,8 +1,28 @@
-﻿@{
+﻿@addTagHelper *, MVCApp
+@{
     ViewData["Title"] = "Home Page";
 }
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+<div>
+    @await Component.InvokeAsync("Timer", new { includeSeconds = true })
+    <br />
+    <vc:timer include-seconds="false" format24="false" />
+    <hr />
+    @await Component.InvokeAsync("TimerHtml")
+    <br />
+    <vc:timer-html />
+    <hr />
+    @await Component.InvokeAsync("UsersList")
+    <br />
+    <vc:users-list />
+    <hr />
+    @await Component.InvokeAsync("AsyncTest", new { delay = 1000 });
+    <vc:async-test delay="1000" />
+    <hr/>
+    <vc:show-context foo="barrr" />
 </div>
