@@ -52,7 +52,9 @@ namespace EFCoreApp
 
 
             //TestDb();
-            Relations();
+            //Relations();
+            //Linq();
+            Sql();
         }
 
         private static void TestDb()
@@ -220,7 +222,7 @@ namespace EFCoreApp
         {
             Console.WriteLine("3. Linq");
 
-            using (var db = new ApplicationContext())
+            using (var db = new ApplicationContext(_options))
             {
                 var users = db.Users.Where(x => EF.Functions.Like(x.Name, "B%")).ToList();
 
@@ -229,6 +231,29 @@ namespace EFCoreApp
                 {
                     Console.WriteLine($"{u.Id}.{u.Name}");
                 }
+
+                User u1 = db.Users.FirstOrDefault();
+                User u2 = db.Users.FirstOrDefault();
+
+                Console.WriteLine($"u1 == u2 ({u1 == u2})");
+
+                Console.WriteLine($"Entries count: {db.ChangeTracker.Entries().Count()}");
+            }
+        }
+
+        private static void Sql()
+        {
+            using (var db = new ApplicationContext(_options))
+            {
+                List<User> res = db.Users.FromSqlRaw("SELECT * FROM Users").ToList();
+
+                foreach (User u in res)
+                {
+                    Console.WriteLine($"{u.Id}.{u.Name} - {u.Age}");
+                }
+
+                int count = db.Database.ExecuteSqlRaw("SELECT * FROM Users");
+                Console.WriteLine($"count = {count}");
             }
         }
 

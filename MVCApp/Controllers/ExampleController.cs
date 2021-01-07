@@ -29,7 +29,12 @@ namespace MVCApp.Controllers
         private readonly IOptionsSnapshot<SomeSettings> _optsSnapshot;
         private readonly IOptionsMonitor<SomeSettings> _optsMonitor;
 
-        public ExampleController(ILogger<ExampleController> logger, IApplicationService application, IRequestStoreService requestStore, IDateTimeService dateTime, IOptions<SomeSettings> options, IOptionsSnapshot<SomeSettings> optionsSnapshot, IOptionsMonitor<SomeSettings> optionsMonitor)
+        private readonly TestappdbContext _db;
+
+        public ExampleController(ILogger<ExampleController> logger, IApplicationService application,
+            IRequestStoreService requestStore, IDateTimeService dateTime, IOptions<SomeSettings> options,
+            IOptionsSnapshot<SomeSettings> optionsSnapshot, IOptionsMonitor<SomeSettings> optionsMonitor,
+            TestappdbContext db)
         {
             _logger = logger;
             _requestStore = requestStore;
@@ -44,6 +49,8 @@ namespace MVCApp.Controllers
             {
                 _logger.LogInformation("Config {ConfigName} was changed ({DateTime}). {Additional}", opt.GetType().Name, DateTime.Now, s);
             });
+
+            _db = db;
         }
 
         //[Route("")]
@@ -84,6 +91,18 @@ namespace MVCApp.Controllers
         public IActionResult GetCookies()
         {
             return Content(string.Join(", ", Request.Cookies.Keys));
+        }
+
+        public IActionResult DbTest()
+        {
+            User user = _db.Users.FirstOrDefault();
+
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            return Content($"{user.Id}.{user.Name} - {user.Age} ({user.Sex})");
         }
         
         //GET: /example/getcookie/session_cookie
