@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MVCApp.Infrastructure.Constraints;
+using MVCApp.Infrastructure.Filters;
 using MVCApp.Infrastructure.Middleware;
 using MVCApp.Infrastructure.ModelBinders;
 using MVCApp.Infrastructure.ValueProviders;
@@ -45,6 +46,8 @@ namespace MVCApp
             {
                 opts.ValueProviderFactories.Add(new CookieValueProviderFactory());
                 opts.ModelBinderProviders.Insert(0, new CustomDateTimeModelBinderProvider());
+
+                opts.Filters.Add<LastVisitResourceFilter>();
             });//.AddRazorRuntimeCompilation();
 
             services.AddDistributedMemoryCache();
