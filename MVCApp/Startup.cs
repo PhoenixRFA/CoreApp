@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -36,7 +37,16 @@ namespace MVCApp
             services.AddDbContext<TestappdbContext>(opts =>
             {
                 opts.UseSqlServer(connection);
+                opts.LogTo(x => Debug.WriteLine(x), LogLevel.Information);
             });
+
+
+            //Add authentification services
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(opts=>
+                {
+                    opts.LoginPath = new PathString("/Account/Login");
+                });
 
 
             services.AddTransient<IDateTimeService, DateTimeService>();
@@ -103,6 +113,7 @@ namespace MVCApp
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
