@@ -19,6 +19,7 @@ namespace MVCApp
         public bool IsMarried { get; set; }
         public int? UserDataId { get; set; }
         public int? CompanyId { get; set; }
+        public string Password { get; set; }
 
         public virtual Company Company { get; set; }
         public virtual UserDatum UserData { get; set; }
