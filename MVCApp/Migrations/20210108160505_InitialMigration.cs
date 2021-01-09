@@ -6,7 +6,7 @@ namespace MVCApp.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>("Password", "Users", nullable: true);
+            
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MVCApp.Infrastructure.AuthorizationRequirements;
 using MVCApp.Models;
 using System;
 using System.Collections.Generic;
@@ -32,10 +33,10 @@ namespace MVCApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                User user = await _db.Users.FirstOrDefaultAsync(u => u.Email == model.Email && u.Password == model.Password);
+                User user = await _db.Users.Include(x=>x.Role).FirstOrDefaultAsync(u => u.Email == model.Email && u.Password == model.Password);
                 if (user != null)
                 {
-                    await Authenticate(model.Email);
+                    await Authenticate(model.Email, user.Role?.Name);
 
                     return RedirectToAction("Index", "Home");
                 }
@@ -57,10 +58,11 @@ namespace MVCApp.Controllers
                 User user = await _db.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
                 if (user == null)
                 {
-                    _db.Users.Add(new User { Email = model.Email, Password = model.Password });
+                    Role userRole = _db.Roles.First(x => x.Name == "user");
+                    _db.Users.Add(new User { Email = model.Email, Password = model.Password, Role = userRole });
                     await _db.SaveChangesAsync();
 
-                    await Authenticate(model.Email);
+                    await Authenticate(model.Email, "user");
 
                     return RedirectToAction("Index", "Home");
                 }
@@ -70,12 +72,13 @@ namespace MVCApp.Controllers
             return View(model);
         }
 
-        private async Task Authenticate(string userName)
+        private async Task Authenticate(string userName, string roleName)
         {
             var claims = new List<Claim>
             {
                 new Claim(ClaimsIdentity.DefaultNameClaimType, userName),
-                new Claim(ClaimsIdentity.DefaultRoleClaimType, "user"),
+                new Claim(ClaimsIdentity.DefaultRoleClaimType, roleName ?? "user"),
+                new Claim(ClaimTypes.DateOfBirth, "2003"),
                 new Claim("test", "foobar")
             };
             
@@ -93,7 +96,43 @@ namespace MVCApp.Controllers
         [Authorize]
         public IActionResult Test()
         {
-            return Content(User?.Identity?.Name);
+            bool isAuthenticated = User.Identity.IsAuthenticated;
+            string name = User.Identity.Name;
+            string authenticationType = User.Identity.AuthenticationType;
+
+            Claim claim = User.Claims.First();
+            ClaimsIdentity subj = claim.Subject;
+
+            var claimsIdentity = User.Identity as ClaimsIdentity;
+            claimsIdentity.AddClaim(new Claim("created", DateTime.Now.ToString(), ClaimValueTypes.DateTime, "CoreApp.MVCApp"));
+            claimsIdentity.AddClaim(new Claim("id", "123", ClaimValueTypes.Integer, "CoreApp.MVCApp"));
+
+            Claim idClaim = claimsIdentity.FindFirst(x => x.Type == "id");
+            claimsIdentity.RemoveClaim(idClaim);
+            bool has123Claim = claimsIdentity.HasClaim(x => x.Value == "123");
+
+            return Content($"User is authenticated: {isAuthenticated}, name: {name}, authentication type: {authenticationType}"+
+                $"\n\rClaim. Issuer: {claim.Issuer} (original issuer: {claim.OriginalIssuer}). Type: {claim.Type}. Value: {claim.Value} (Value type: {claim.ValueType}). " + 
+                $"\n\rSubject. BootstrapContext: {subj.BootstrapContext}. Label: {subj.Label}. Identity and Claims subject are the same: {User.Identity == claim.Subject}");
+        }
+
+        [Authorize(Roles = "admin")]
+        public IActionResult TestRole()
+        {
+            return Content($"Role (from claims): {User.FindFirst(x => x.Type == ClaimTypes.Role)}");
+        }
+
+        [Authorize("test")]
+        public IActionResult TestPolicy()
+        {
+            return Content($"Policy test - OK");
+        }
+
+        [Authorize("age")]
+        //[MinimumAgeAuthorize(17)]
+        public IActionResult TestAge()
+        {
+            return Content($"Age test - OK");
         }
     }
 }

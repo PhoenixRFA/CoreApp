@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using MVCApp.Infrastructure.AuthorizationRequirements;
 using MVCApp.Infrastructure.Constraints;
 using MVCApp.Infrastructure.Filters;
 using MVCApp.Infrastructure.Middleware;
@@ -41,13 +43,30 @@ namespace MVCApp
             });
 
 
+            services.AddTransient<IAuthorizationHandler, AgeHandler>();
+
             //Add authentification services
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(opts=>
                 {
                     opts.LoginPath = new PathString("/Account/Login");
                 });
-
+            services.AddAuthorization(opts =>
+            {
+                AuthorizationPolicy dafault = opts.DefaultPolicy;
+                opts.AddPolicy("test", policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireRole("user", "admin");
+                    policy.RequireClaim("test", "foobar");
+                    policy.RequireUserName("some@email.com");
+                    //policy.RequireAssertion(context => context.Resource)
+                });
+                opts.AddPolicy("age", policy =>
+                {
+                    policy.Requirements.Add(new AgeRequirement(18));
+                });
+            });
 
             services.AddTransient<IDateTimeService, DateTimeService>();
             services.AddScoped<IRequestStoreService, RequestStoreService>();

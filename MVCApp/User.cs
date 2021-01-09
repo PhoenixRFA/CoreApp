@@ -21,9 +21,11 @@ namespace MVCApp
         public int? CompanyId { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
+        public int? RoleId { get; set; }
 
         public virtual Company Company { get; set; }
         public virtual UserDatum UserData { get; set; }
         public virtual ICollection<LanguageUser> LanguageUsers { get; set; }
+        public virtual Role Role { get; set; }
     }
 }
