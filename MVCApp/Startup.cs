@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -13,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using MVCApp.Infrastructure;
 using MVCApp.Infrastructure.AuthorizationRequirements;
 using MVCApp.Infrastructure.Constraints;
 using MVCApp.Infrastructure.Filters;
@@ -43,8 +45,12 @@ namespace MVCApp
             });
 
 
+            //Custom aithorization policy requirement handler
             services.AddTransient<IAuthorizationHandler, AgeHandler>();
+            //Dynamic policy provider
             services.AddSingleton<IAuthorizationPolicyProvider, MinimumAgePolicyProvider>();
+            //Claims transformer
+            services.AddTransient<IClaimsTransformation, ClaimsTransformer>();
 
             //Add authentification services
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

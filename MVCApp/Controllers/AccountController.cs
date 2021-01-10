@@ -134,5 +134,11 @@ namespace MVCApp.Controllers
         {
             return Content($"Age test - OK");
         }
+
+        [Authorize]
+        public IActionResult Claims()
+        {
+            return View();
+        }
     }
 }
