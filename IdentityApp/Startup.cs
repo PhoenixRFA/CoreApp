@@ -40,7 +40,7 @@ namespace IdentityApp
              * .AddDefaultUI() //подключает UI по-умолчанию дл€ Identity
              * .AddDefaultTokenProviders(); //добавл€ет провайдеры дл€ генерации токенов двухфакторной авторизации, изменени€ парол€, и т.д.
              */
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddDefaultIdentity<IdentityUser>()
                 //указывает какой контекст Ѕƒ использовать
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             
