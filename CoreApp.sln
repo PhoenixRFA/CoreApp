@@ -20,7 +20,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorPagesApp", "RazorPages
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebAPIApp", "WebAPIApp\WebAPIApp.csproj", "{230B6D10-6B30-48DA-99A1-DC5914235F57}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFCoreApp", "EFCoreApp\EFCoreApp.csproj", "{DDB6EF67-B9DE-485D-BEDC-F6EAED0E40D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCoreApp", "EFCoreApp\EFCoreApp.csproj", "{DDB6EF67-B9DE-485D-BEDC-F6EAED0E40D9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityApp", "IdentityApp\IdentityApp.csproj", "{4A9F7E23-687B-42CE-9BAE-FD83BFA98469}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,6 +58,10 @@ Global
 		{DDB6EF67-B9DE-485D-BEDC-F6EAED0E40D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DDB6EF67-B9DE-485D-BEDC-F6EAED0E40D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DDB6EF67-B9DE-485D-BEDC-F6EAED0E40D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A9F7E23-687B-42CE-9BAE-FD83BFA98469}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A9F7E23-687B-42CE-9BAE-FD83BFA98469}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A9F7E23-687B-42CE-9BAE-FD83BFA98469}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A9F7E23-687B-42CE-9BAE-FD83BFA98469}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
