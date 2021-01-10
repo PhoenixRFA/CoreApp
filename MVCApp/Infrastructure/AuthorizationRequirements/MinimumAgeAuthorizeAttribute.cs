@@ -10,7 +10,7 @@ namespace MVCApp.Infrastructure.AuthorizationRequirements
         {
             MinAge = minAge;
 
-            Policy = "age";
+            //Policy = "age";
         }
 
         public int MinAge

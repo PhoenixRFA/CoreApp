@@ -129,7 +129,7 @@ namespace MVCApp.Controllers
         }
 
         //[Authorize("age")]
-        [MinimumAgeAuthorize(17)]
+        [MinimumAgeAuthorize(20)]
         public IActionResult TestAge()
         {
             return Content($"Age test - OK");
