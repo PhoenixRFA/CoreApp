@@ -1,10 +1,13 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Microsoft.IdentityModel.Tokens;
 using System;
+using WebAPIApp.Auth;
 
 namespace WebAPIApp
 {
@@ -21,6 +24,7 @@ namespace WebAPIApp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<IUserStore, UsersStore>();
+            services.AddSingleton<AuthService>();
 
             services.AddControllers();
 
@@ -30,6 +34,23 @@ namespace WebAPIApp
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebAPIApp", Version = "v1", Contact = cont, Description = "Test Web API project", TermsOfService = new Uri("https://localhost:44313/#terms"), License = licence});
             });
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(opts => {
+                    //opts.RequireHttpsMetadata = false;
+                    opts.TokenValidationParameters = new TokenValidationParameters {
+                        ValidateIssuer = true,
+                        ValidIssuer = AuthOptions.ISSUER,
+
+                        ValidateAudience = true,
+                        ValidAudience = AuthOptions.AUDIENCE,
+
+                        ValidateLifetime = true,
+                        
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = AuthOptions.GetKey()
+                    };
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -56,6 +77,7 @@ namespace WebAPIApp
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
