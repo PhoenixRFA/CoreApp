@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace MVCApp.Infrastructure.AuthorizationRequirements
@@ -11,19 +10,25 @@ namespace MVCApp.Infrastructure.AuthorizationRequirements
     {
         public Task<AuthorizationPolicy> GetDefaultPolicyAsync()
         {
-            throw new NotImplementedException();
+            return Task.FromResult(new AuthorizationPolicyBuilder(CookieAuthenticationDefaults.AuthenticationScheme).RequireAuthenticatedUser().Build());
         }
 
         public Task<AuthorizationPolicy> GetFallbackPolicyAsync()
         {
-            throw new NotImplementedException();
+            return Task.FromResult<AuthorizationPolicy>(null);
         }
 
         const string POLICY_PREFIX = "Age";
+        private DefaultAuthorizationPolicyProvider BackupPolicyProvider { get; }
+
+        public MinimumAgePolicyProvider(IOptions<AuthorizationOptions> options)
+        {
+            BackupPolicyProvider = new DefaultAuthorizationPolicyProvider(options);
+        }
 
         public Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
         {
-            if (policyName.StartsWith("age", StringComparison.OrdinalIgnoreCase) && 
+            if (policyName.StartsWith("age", StringComparison.OrdinalIgnoreCase) &&
                 int.TryParse(policyName.Substring(POLICY_PREFIX.Length), out var age))
             {
                 var policy = new AuthorizationPolicyBuilder(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -31,7 +36,7 @@ namespace MVCApp.Infrastructure.AuthorizationRequirements
                 return Task.FromResult(policy.Build());
             }
 
-            return Task.FromResult<AuthorizationPolicy>(null);
+            return BackupPolicyProvider.GetPolicyAsync(policyName);
         }
     }
 }

@@ -128,8 +128,8 @@ namespace MVCApp.Controllers
             return Content($"Policy test - OK");
         }
 
-        [Authorize("age")]
-        //[MinimumAgeAuthorize(17)]
+        //[Authorize("age")]
+        [MinimumAgeAuthorize(17)]
         public IActionResult TestAge()
         {
             return Content($"Age test - OK");

@@ -44,6 +44,7 @@ namespace MVCApp
 
 
             services.AddTransient<IAuthorizationHandler, AgeHandler>();
+            services.AddSingleton<IAuthorizationPolicyProvider, MinimumAgePolicyProvider>();
 
             //Add authentification services
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
