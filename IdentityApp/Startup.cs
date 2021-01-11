@@ -1,4 +1,5 @@
 using IdentityApp.Data;
+using IdentityApp.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -40,10 +41,12 @@ namespace IdentityApp
              * .AddDefaultUI() //подключает UI по-умолчанию дл€ Identity
              * .AddDefaultTokenProviders(); //добавл€ет провайдеры дл€ генерации токенов двухфакторной авторизации, изменени€ парол€, и т.д.
              */
-            services.AddDefaultIdentity<IdentityUser>()
+            //подключение identity, со своим классом пользовател€ и рол€ми
+            services.AddIdentity<User, Role>()
+            //services.AddDefaultIdentity<IdentityUser>() //подключение Identity по-умолчанию
                 //указывает какой контекст Ѕƒ использовать
                 .AddEntityFrameworkStores<ApplicationDbContext>();
-            
+
             services.AddControllersWithViews();
 
             ConfigureIdentity(services);
@@ -54,7 +57,7 @@ namespace IdentityApp
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                
+
                 //ѕримен€ет миграцию дл€ исправалени€ ошибок EF
                 //ѕуть по-умолчанию: /ApplyDatabaseMigrations
                 app.UseMigrationsEndPoint();
@@ -93,7 +96,7 @@ namespace IdentityApp
                 cfg.Password.RequireUppercase = true;
                 cfg.Password.RequiredLength = 6;
                 cfg.Password.RequiredUniqueChars = 1;
-                
+
                 //Default values
                 cfg.Lockout.AllowedForNewUsers = true;
                 cfg.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
