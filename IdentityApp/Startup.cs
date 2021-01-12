@@ -42,8 +42,8 @@ namespace IdentityApp
              * .AddDefaultTokenProviders(); //добавляет провайдеры для генерации токенов двухфакторной авторизации, изменения пароля, и т.д.
              */
             //подключение identity, со своим классом пользователя и ролями
-            services.AddIdentity<User, Role>()
-            //services.AddDefaultIdentity<IdentityUser>() //подключение Identity по-умолчанию
+            //services.AddIdentity<User, Role>()
+            services.AddDefaultIdentity<IdentityUser>() //подключение Identity по-умолчанию
                 //указывает какой контекст БД использовать
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 

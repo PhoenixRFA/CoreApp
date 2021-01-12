@@ -8,7 +8,7 @@ using System.Text;
 
 namespace IdentityApp.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<User, Role, long>
+    public class ApplicationDbContext : IdentityDbContext//<User, Role, long>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
     }
