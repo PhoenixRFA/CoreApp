@@ -22,7 +22,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebAPIApp", "WebAPIApp\WebA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCoreApp", "EFCoreApp\EFCoreApp.csproj", "{DDB6EF67-B9DE-485D-BEDC-F6EAED0E40D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityApp", "IdentityApp\IdentityApp.csproj", "{4A9F7E23-687B-42CE-9BAE-FD83BFA98469}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityApp", "IdentityApp\IdentityApp.csproj", "{4A9F7E23-687B-42CE-9BAE-FD83BFA98469}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentitySandboxApp", "IdentitySandboxApp\IdentitySandboxApp.csproj", "{688219A7-2AB0-4D52-AE13-707E256DE174}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -62,6 +64,10 @@ Global
 		{4A9F7E23-687B-42CE-9BAE-FD83BFA98469}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4A9F7E23-687B-42CE-9BAE-FD83BFA98469}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4A9F7E23-687B-42CE-9BAE-FD83BFA98469}.Release|Any CPU.Build.0 = Release|Any CPU
+		{688219A7-2AB0-4D52-AE13-707E256DE174}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{688219A7-2AB0-4D52-AE13-707E256DE174}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{688219A7-2AB0-4D52-AE13-707E256DE174}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{688219A7-2AB0-4D52-AE13-707E256DE174}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
