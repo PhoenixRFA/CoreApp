@@ -1,0 +1,28 @@
+﻿@using IdentitySandboxApp.Models.Identity
+@model LoginWithRecoveryCodeModel
+@{
+    ViewData["Title"] = "Логин с кодом восстановления";
+}
+
+<h1>@ViewData["Title"]</h1>
+<hr />
+<p>
+    Вы пытаетесь войти с помощью кода восстанволения. (Этот вход не будет сохранен, пока вы не войдете через приложение двухфакторной авторизации или не отключите двухфакторную авторизацию и войдете снова)
+</p>
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="form-group">
+                <label>Код восстановления</label>
+                <input name="recoveryCode" class="form-control" autocomplete="off" />
+                <span asp-validation-for="@Model.RecoveryCode" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-primary">Войти</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @*<partial name="_ValidationScriptsPartial" />*@
+}

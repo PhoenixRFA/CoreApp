@@ -1,0 +1,41 @@
+﻿@using IdentitySandboxApp.Models.Identity
+@model LoginWith2faModel
+@{
+    ViewData["Title"] = "Двухфакторная авторизация";
+}
+
+<h1>@ViewData["Title"]</h1>
+<hr />
+<p>Включена двухфакторная авторизация. Введите код из приложения</p>
+<div class="row">
+    <div class="col-md-4">
+        <form method="post" asp-route-returnUrl="@ViewBag.ReturnUrl">
+            <input name="rememberMe" type="hidden" value="@ViewBag.RemeberMe" />
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="form-group">
+                <label>Код авторизации</label>
+                <input name="twoFactorCode" class="form-control" autocomplete="off" />
+                <span asp-validation-for="@Model.TwoFactorCode" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <div class="checkbox">
+                    <label>
+                        <input name="rememberMachine" value="false" />
+                        Запомнить это устройстройство
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Вход</button>
+            </div>
+        </form>
+    </div>
+</div>
+<p>
+    Нет доступа к устройству для двухфакторной авторизации?
+    Вы можете <a id="recovery-code-login" asp-action="LoginWithRecoveryCode" asp-route-returnUrl="@Model.ReturnUrl">войти с помощью кода восстановления</a>.
+</p>
+
+@section Scripts {
+    @*<partial name="_ValidationScriptsPartial" />*@
+}

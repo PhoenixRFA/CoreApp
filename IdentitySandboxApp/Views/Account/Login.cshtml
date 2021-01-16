@@ -1,0 +1,75 @@
+﻿@using IdentitySandboxApp.Models.Identity
+@model LoginModel
+@{
+    ViewData["Title"] = "Вход";
+}
+
+<h1>@ViewData["Title"]</h1>
+<div class="row">
+    <div class="col-md-4">
+        <section>
+            <form id="account" method="post">
+                <h4>Форма входа</h4>
+                <hr />
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="form-group">
+                    <label>Логин</label>
+                    <input name="login" class="form-control" />
+                    <span asp-validation-for="@Model.Login" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input name="password" class="form-control" />
+                    <span asp-validation-for="@Model.Password" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <div class="checkbox">
+                        <label>
+                            <input name="rememberMe" value="false" />
+                            Запомнить меня
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Войти</button>
+                </div>
+                <div class="form-group">
+                    <p>
+                        <a id="forgot-password" href="#">Забыли пароль?</a>
+                    </p>
+                    <p>
+                        <a href="#" asp-route-returnUrl="@ViewBag.ReturnUrl">Зарегистрироваться</a>
+                    </p>
+                    <p>
+                        <a id="resend-confirmation" href="#">Отправить заново подтверждение на email</a>
+                    </p>
+                </div>
+            </form>
+        </section>
+    </div>
+    <div class="col-md-6 col-md-offset-2">
+        <section>
+            <h4>Вход с помощью другого сервиса</h4>
+            <hr />
+            @{
+                if ((ViewBag.ExternalLogins?.Count ?? 0) > 0)
+                {
+                    <form id="external-account" href="#" asp-route-returnUrl="@ViewBag.ReturnUrl" method="post" class="form-horizontal">
+                        <div>
+                            <p>
+                                @foreach (var provider in ViewBag.ExternalLogins)
+                                {
+                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Вход с помощью @provider.DisplayName">@provider.DisplayName</button>
+                                }
+                            </p>
+                        </div>
+                    </form>
+                }
+            }
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    @*<partial name="_ValidationScriptsPartial" />*@
+}
