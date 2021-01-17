@@ -46,7 +46,7 @@ namespace IdentitySandboxApp.Controllers
             return View();
         }
 
-        #region Registration
+        #region Registration +
 
         [HttpGet]
         public async Task<IActionResult> Register(string returnUrl = null)
@@ -70,9 +70,9 @@ namespace IdentitySandboxApp.Controllers
             }
 
             bool isUsernameEmpty = false;
-            if (string.IsNullOrWhiteSpace(model.Email))
+            if (string.IsNullOrWhiteSpace(model.Username))
             {
-                ModelState.AddModelError(nameof(model.Email), "Введите логин");
+                ModelState.AddModelError(nameof(model.Username), "Введите логин");
                 isUsernameEmpty = true;
             }
 
@@ -96,10 +96,10 @@ namespace IdentitySandboxApp.Controllers
                 ModelState.AddModelError(nameof(model.DateOfBirth), "Введите дату рождения");
                 isDateEmpty = true;
             }
-
+            ModelState.AddModelError("", "Testtesttest");
             if(isEmailEmpty || isUsernameEmpty || isPassEmpty || isPassConfirmEmpty || isDateEmpty)
             {
-                return View();
+                return View(model);
             }
 
             bool isPasswordsNotSame = false;
@@ -132,7 +132,7 @@ namespace IdentitySandboxApp.Controllers
             
             if (isPasswordsNotSame || isEmailExists || isUsernameExists || isDateInvalid)
             {
-                return View("ExternalLogin");
+                return View(model);
             }
 
             var user = new User
@@ -177,14 +177,14 @@ namespace IdentitySandboxApp.Controllers
         public IActionResult RegisterConfirmation()
         {
             ViewData["Title"] = "Подтверждение регистрации";
-            ViewBag["Message"] = "Проверьте ваш email для завершения";
+            ViewData["Message"] = "Проверьте ваш email для завершения регистрации";
 
             return View("Common");
         }
 
         #endregion
 
-        #region Login/Logout
+        #region Login/Logout +
 
         [HttpGet]
         public async Task<IActionResult> Login(string returnUrl = null)
@@ -192,7 +192,7 @@ namespace IdentitySandboxApp.Controllers
             ViewBag.ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             ViewBag.ReturnUrl = returnUrl;
 
-            return View();
+            return View(new LoginModel());
         }
         [HttpPost]
         public async Task<IActionResult> Login(LoginModel model)
@@ -239,7 +239,7 @@ namespace IdentitySandboxApp.Controllers
             ViewBag.ReturnUrl = model.ReturnUrl;
 
             ModelState.AddModelError(string.Empty, "Не верный логин и/или пароль");
-            return View();
+            return View(model);
         }
 
         public async Task<IActionResult> LogOut()
@@ -521,7 +521,7 @@ namespace IdentitySandboxApp.Controllers
 
         #endregion
 
-        #region Forgot/Reset password
+        #region Forgot/Reset password +
 
         [HttpGet]
         public IActionResult ForgotPassword()
@@ -570,7 +570,7 @@ namespace IdentitySandboxApp.Controllers
 
             ViewBag.Code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
 
-            return View();
+            return View(new ResetPasswordModel{Code = code});
         }
         [HttpPost]
         public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
@@ -613,7 +613,8 @@ namespace IdentitySandboxApp.Controllers
                 return RedirectToAction("ResetPasswordConfirmation");
             }
 
-            IdentityResult res = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
+            string code = HttpUtility.HtmlDecode(model.Code);
+            IdentityResult res = await _userManager.ResetPasswordAsync(user, code, model.Password);
             if (res.Succeeded)
             {
                 return RedirectToAction("ResetPasswordConfirmation");
@@ -623,20 +624,20 @@ namespace IdentitySandboxApp.Controllers
             {
                 ModelState.AddModelError(string.Empty, error.Description);
             }
-            return View();
+            return View(model);
         }
 
         public IActionResult ResetPasswordConfirmation()
         {
             ViewData["Title"] = "Подтверждение email";
-            ViewBag["Message"] = $"Пароль был сброшен. <a href=\"{Url.Action("Login")}\">Нажмите что бы войти</a>";
+            ViewData["Message"] = $"Пароль был сброшен. <a href=\"{Url.Action("Login")}\">Нажмите что бы войти</a>";
 
             return View("Common");
         }
 
         #endregion
 
-        #region Confirm Email
+        #region Confirm Email +
 
         public async Task<IActionResult> ConfirmEmail(long userId, string code)
         {
@@ -654,9 +655,9 @@ namespace IdentitySandboxApp.Controllers
             string token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
             IdentityResult res = await _userManager.ConfirmEmailAsync(user, token);
 
-            ViewBag["Message"] = res.Succeeded ? "Спасибо за подтверждение email" : "Не удалось подтвердить email";
+            ViewData["Message"] = res.Succeeded ? "Спасибо за подтверждение email" : "Не удалось подтвердить email";
             
-            if (res.Succeeded)
+            if (!res.Succeeded)
             {
                 _logger.LogWarning("Cannot confirm {user} email", user.UserName);
             }
@@ -681,9 +682,10 @@ namespace IdentitySandboxApp.Controllers
             }
 
             User user = await _userManager.FindByEmailAsync(email);
-            if (user != null)
+            if (user == null)
             {
                 ViewData["Message"] = "Подтверждение отправлено на ваш email";
+                return View();
             }
 
             string userId = await _userManager.GetUserIdAsync(user);
@@ -698,5 +700,28 @@ namespace IdentitySandboxApp.Controllers
         }
 
         #endregion
+
+        /*Identity error codes:
+            DefaultError
+            ConcurrencyFailure
+            PasswordMismatch
+            InvalidToken
+            LoginAlreadyAssociated
+            InvalidUserName
+            InvalidEmail
+            DuplicateUserName
+            DuplicateEmail
+            InvalidRoleName
+            DuplicateRoleName
+            UserAlreadyHasPassword
+            UserLockoutNotEnabled
+            UserAlreadyInRole
+            UserNotInRole
+            PasswordTooShort
+            PasswordRequiresNonAlphanumeric 
+            PasswordRequiresDigit
+            PasswordRequiresLower
+            PasswordRequiresUpper
+        */
     }
 }

@@ -3,6 +3,7 @@ using IdentitySandboxApp.Infrastructure;
 using IdentitySandboxApp.Models.Identity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -29,8 +30,24 @@ namespace IdentitySandboxApp
             services.AddDatabaseDeveloperPageExceptionFilter();
 
             services.AddIdentity<User, Role>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+                //.AddTokenProvider<DataProtectorTokenProvider<User>>(TokenOptions.DefaultProvider);
             services.AddControllersWithViews();
+
+            services.Configure<IdentityOptions>(opts =>
+            {
+                opts.Password.RequireDigit = false;
+                opts.Password.RequireLowercase = false;
+                opts.Password.RequireUppercase = false;
+                opts.Password.RequireNonAlphanumeric = false;
+                opts.Password.RequiredLength = 6;
+                opts.Password.RequiredUniqueChars = 1;
+
+                opts.User.RequireUniqueEmail = true;
+
+                opts.SignIn.RequireConfirmedAccount = true;
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
