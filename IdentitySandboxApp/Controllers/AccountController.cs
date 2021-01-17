@@ -10,7 +10,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 using Microsoft.AspNetCore.Authentication;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
@@ -54,6 +53,7 @@ namespace IdentitySandboxApp.Controllers
             var model = new RegisterModel
             {
                 ReturnUrl = returnUrl,
+                //TODO Extract method and cache GetExternalAuthenticationSchemesAsync result
                 ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList()
             };
             
@@ -62,6 +62,9 @@ namespace IdentitySandboxApp.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterModel model)
         {
+            //TODO Extract validation
+            #region Validation
+            
             bool isEmailEmpty = false;
             if (string.IsNullOrWhiteSpace(model.Email))
             {
@@ -96,7 +99,7 @@ namespace IdentitySandboxApp.Controllers
                 ModelState.AddModelError(nameof(model.DateOfBirth), "Введите дату рождения");
                 isDateEmpty = true;
             }
-            ModelState.AddModelError("", "Testtesttest");
+            
             if(isEmailEmpty || isUsernameEmpty || isPassEmpty || isPassConfirmEmpty || isDateEmpty)
             {
                 return View(model);
@@ -134,6 +137,8 @@ namespace IdentitySandboxApp.Controllers
             {
                 return View(model);
             }
+            
+            #endregion
 
             var user = new User
             {
@@ -149,13 +154,18 @@ namespace IdentitySandboxApp.Controllers
                 _logger.LogInformation("New user {user} created", user.UserName);
 
                 string userId = await _userManager.GetUserIdAsync(user);
-                    
+                
+                //TODO Extract method
+                #region Generate confirm ermail token
+
                 string code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
                 string callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId, code }, Request.Scheme);
 
                 await _emailSender.SendEmailAsync(model.Email, "Подтверждение email", $"Для сброса пароля перейдите по <a href=\"{callbackUrl}\">ссылке</a>");// или введите код: <b>{code}</b>");
+
+                #endregion
 
                 if (_userManager.Options.SignIn.RequireConfirmedAccount)
                 {
@@ -189,6 +199,7 @@ namespace IdentitySandboxApp.Controllers
         [HttpGet]
         public async Task<IActionResult> Login(string returnUrl = null)
         {
+            //TODO See early
             ViewBag.ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             ViewBag.ReturnUrl = returnUrl;
 
@@ -197,23 +208,29 @@ namespace IdentitySandboxApp.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginModel model)
         {
-            bool loginIsEmpty = false;
-            if (string.IsNullOrWhiteSpace(model.Login))
-            {
-                ModelState.AddModelError(nameof(model.Login), "Введите логин");
-                loginIsEmpty = true;
-            }
+            //bool loginIsEmpty = false;
+            //if (string.IsNullOrWhiteSpace(model.Login))
+            //{
+            //    ModelState.AddModelError(nameof(model.Login), "Введите логин");
+            //    loginIsEmpty = true;
+            //}
 
-            bool passIsEmpty = false;
-            if (string.IsNullOrWhiteSpace(model.Password))
-            {
-                ModelState.AddModelError(nameof(model.Password), "Введите пароль");
-                passIsEmpty = true;
-            }
+            //bool passIsEmpty = false;
+            //if (string.IsNullOrWhiteSpace(model.Password))
+            //{
+            //    ModelState.AddModelError(nameof(model.Password), "Введите пароль");
+            //    passIsEmpty = true;
+            //}
 
-            if(loginIsEmpty || passIsEmpty)
+            //if(loginIsEmpty || passIsEmpty)
+            //{
+            //    return View();
+            //}
+
+            //TODO Use model validation via annotations
+            if (!ModelState.IsValid)
             {
-                return View();
+                return View(model);
             }
 
             SignInResult res = await _signInManager.PasswordSignInAsync(model.Login, model.Password, model.RememberMe, true);
@@ -234,7 +251,8 @@ namespace IdentitySandboxApp.Controllers
                 _logger.LogWarning("{user} is locked out", model.Login);
                 return RedirectToAction("Lockout");
             }
-
+            
+            //TODO See earlier
             ViewBag.ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             ViewBag.ReturnUrl = model.ReturnUrl;
 
@@ -531,6 +549,7 @@ namespace IdentitySandboxApp.Controllers
         [HttpPost]
         public async Task<IActionResult> ForgotPassword(string email)
         {
+            //TODO Use model & model validation
             if (string.IsNullOrWhiteSpace(email))
             {
                 ModelState.AddModelError(string.Empty, "Введите пароль");
@@ -543,9 +562,9 @@ namespace IdentitySandboxApp.Controllers
                 return RedirectToAction("ForgotPasswordConfirmation");
             }
 
+            //TODO Extract method
             string code = await _userManager.GeneratePasswordResetTokenAsync(user);
-            string encodedCode = HttpUtility.HtmlEncode(code);
-            //string encodedCode = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+            string encodedCode = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
             string callbackUrl = Url.Action("ResetPassword", "Account", new { code = encodedCode }, Request.Scheme);
 
             await _emailSender.SendEmailAsync(email, "Сброс пароля", $"Для сброса пароля перейдите по <a href=\"{callbackUrl}\">ссылке</a>");// или введите код: <b>{code}</b>");
@@ -568,13 +587,17 @@ namespace IdentitySandboxApp.Controllers
                 return BadRequest($"Field {nameof(code)} is empty");
             }
 
-            ViewBag.Code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
+            code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
 
             return View(new ResetPasswordModel{Code = code});
         }
         [HttpPost]
         public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
         {
+            //TODO Use data annotations
+
+            #region Validation
+
             bool isEmailEmpty = false;
             if (string.IsNullOrWhiteSpace(model.Email))
             {
@@ -606,6 +629,8 @@ namespace IdentitySandboxApp.Controllers
                 ModelState.AddModelError(nameof(model.ConfirmPassword), "Пароли должны совпадать");
                 return View();
             }
+            
+            #endregion
 
             User user = await _userManager.FindByEmailAsync(model.Email);
             if(user == null)
@@ -613,7 +638,8 @@ namespace IdentitySandboxApp.Controllers
                 return RedirectToAction("ResetPasswordConfirmation");
             }
 
-            string code = HttpUtility.HtmlDecode(model.Code);
+            //Extract method for decode
+            string code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(model.Code));
             IdentityResult res = await _userManager.ResetPasswordAsync(user, code, model.Password);
             if (res.Succeeded)
             {
@@ -675,6 +701,7 @@ namespace IdentitySandboxApp.Controllers
         [HttpPost]
         public async Task<IActionResult> ResendEmailConfirmation(string email)
         {
+            //TODO Use model & validation
             if (string.IsNullOrWhiteSpace(email))
             {
                 ModelState.AddModelError(string.Empty, "Введите email");
@@ -688,6 +715,7 @@ namespace IdentitySandboxApp.Controllers
                 return View();
             }
 
+            //TODO Extract method
             string userId = await _userManager.GetUserIdAsync(user);
             string code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
