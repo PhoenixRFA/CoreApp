@@ -19,8 +19,18 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label>Email</label>
-                <input name="email" class="form-control" />
+                <input name="email" type="email" class="form-control" value="@Model.Email"/>
                 <span asp-validation-for="@Model.Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label>Логин</label>
+                <input name="username" class="form-control" value="@Model.Username"/>
+                <span asp-validation-for="@Model.Username" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label>Дата рождения</label>
+                <input name="dateOfBirth" type="date" class="form-control" value="@Model.DateOfBirth"/>
+                <span asp-validation-for="@Model.DateOfBirth" class="text-danger"></span>
             </div>
             <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
         </form>

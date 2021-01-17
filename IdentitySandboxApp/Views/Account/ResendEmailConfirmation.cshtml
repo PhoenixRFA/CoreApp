@@ -1,0 +1,28 @@
+﻿@{
+    ViewData["Title"] = "Подтверждение email";
+}
+
+<h1>@ViewData["Title"]</h1>
+<h4>Введите ваш email</h4>
+<hr />
+<div class="row">
+    @if (ViewData["Message"] != null)
+    {
+        <div class="col-sm-12">
+            <h4>@ViewData["Message"]</h4>
+        </div>
+    }
+    else
+    {
+        <div class="col-md-4">
+            <form method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input name="email" class="form-control" />
+                </div>
+                <button type="submit" class="btn btn-primary">Подтвердить</button>
+            </form>
+        </div>
+    }
+</div>
