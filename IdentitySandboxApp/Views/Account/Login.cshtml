@@ -25,7 +25,7 @@
                 <div class="form-group">
                     <div class="checkbox">
                         <label>
-                            <input name="rememberMe" value="false" />
+                            <input name="rememberMe" type="checkbox" value="false" />
                             Запомнить меня
                         </label>
                     </div>
@@ -35,26 +35,25 @@
                 </div>
                 <div class="form-group">
                     <p>
-                        <a id="forgot-password" href="#">Забыли пароль?</a>
+                        <a id="forgot-password" asp-action="ForgotPassword">Забыли пароль?</a>
                     </p>
                     <p>
-                        <a href="#" asp-route-returnUrl="@ViewBag.ReturnUrl">Зарегистрироваться</a>
+                        <a asp-action="Register" asp-route-returnUrl="@ViewBag.ReturnUrl">Зарегистрироваться</a>
                     </p>
                     <p>
-                        <a id="resend-confirmation" href="#">Отправить заново подтверждение на email</a>
+                        <a id="resend-confirmation" asp-action="ResendEmailConfirmation">Отправить заново подтверждение на email</a>
                     </p>
                 </div>
             </form>
         </section>
     </div>
-    <div class="col-md-6 col-md-offset-2">
-        <section>
-            <h4>Вход с помощью другого сервиса</h4>
-            <hr />
-            @{
-                if ((ViewBag.ExternalLogins?.Count ?? 0) > 0)
-                {
-                    <form id="external-account" href="#" asp-route-returnUrl="@ViewBag.ReturnUrl" method="post" class="form-horizontal">
+    @if ((ViewBag.ExternalLogins?.Count ?? 0) > 0)
+    {
+        <div class="col-md-6 col-md-offset-2">
+            <section>
+                <h4>Вход с помощью другого сервиса</h4>
+                <hr />
+                    <form id="external-account" asp-action="ExternalLogin" asp-route-returnUrl="@ViewBag.ReturnUrl" method="post" class="form-horizontal">
                         <div>
                             <p>
                                 @foreach (var provider in ViewBag.ExternalLogins)
@@ -64,10 +63,9 @@
                             </p>
                         </div>
                     </form>
-                }
-            }
-        </section>
-    </div>
+            </section>
+        </div>
+    }
 </div>
 
 @section Scripts {

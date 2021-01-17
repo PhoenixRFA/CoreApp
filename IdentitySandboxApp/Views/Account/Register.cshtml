@@ -41,27 +41,25 @@
             <button type="submit" class="btn btn-primary">Регистрация</button>
         </form>
     </div>
+    @if ((Model.ExternalLogins?.Count ?? 0) > 0)
+    {
     <div class="col-md-6 col-md-offset-2">
         <section>
             <h4>Вход с помощью другого сервиса</h4>
             <hr />
-            @{
-                if ((Model.ExternalLogins?.Count ?? 0) > 0)
-                {
-                    <form id="external-account" asp-action="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
-                        <div>
-                            <p>
-                                @foreach (AuthenticationScheme provider in Model.ExternalLogins)
-                                {
-                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Вход с помощью @provider.DisplayName">@provider.DisplayName</button>
-                                }
-                            </p>
-                        </div>
-                    </form>
-                }
-            }
+            <form id="external-account" asp-action="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
+                <div>
+                    <p>
+                        @foreach (AuthenticationScheme provider in Model.ExternalLogins)
+                        {
+                            <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Вход с помощью @provider.DisplayName">@provider.DisplayName</button>
+                        }
+                    </p>
+                </div>
+            </form>
         </section>
     </div>
+    }
 </div>
 
 @section Scripts {
