@@ -5,10 +5,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace IdentitySandboxApp.Controllers
 {
@@ -44,7 +49,155 @@ namespace IdentitySandboxApp.Controllers
 
         public IActionResult ResetPasswordConfirmation()
         {
-            return View();
+            ViewData["Title"] = "Подтверждение email";
+            ViewBag["Message"] = $"Пароль был сброшен. <a href=\"{Url.Action("Login")}\">Нажмите что бы войти</a>";
+
+            return View("Common");
+        }
+
+        [HttpGet]
+        public IActionResult ExternalLogin() => RedirectToAction("Login");
+
+        [HttpPost] //Request a redirect to the external login provider
+        public IActionResult ExternalLogin(string provider, string returnUrl = null)
+        {
+            string redirectUrl = Url.Action("ExternalLoginCallback", new { returnUrl });
+            
+            AuthenticationProperties properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            
+            return new ChallengeResult(provider, properties);
+        }
+        
+        public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
+        {
+            if (remoteError != null)
+            {
+                ViewData["RemoteError"] = remoteError;
+                return RedirectToAction("Login", new { ReturnUrl = returnUrl});
+            }
+
+            ExternalLoginInfo info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                _logger.LogWarning("Error loading external login information.");
+                ViewData["RemoteError"] = "Ошибка получения информации о внешнем провайдере авторизации";
+                return RedirectToAction("Login", new { ReturnUrl = returnUrl});
+            }
+
+            //Sign in the user with this external login provider if the user already has a login.
+            SignInResult res = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, false, true);
+            if (res.Succeeded)
+            {
+                _logger.LogInformation("{user} is logged in with {provider} provider", info.Principal.Identity?.Name, info.LoginProvider);
+                return LocalRedirect(returnUrl ?? "~/");
+            }
+
+            if (res.IsLockedOut)
+            {
+                _logger.LogWarning("{user} is locked out", info.Principal.Identity?.Name, info.LoginProvider);
+                return RedirectToAction("Lockout");
+            }
+
+            var model = new ExternalLoginModel
+            {
+                ReturnUrl = returnUrl,
+                ProviderName = info.ProviderDisplayName
+            };
+
+            if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
+            {
+                model.Email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            }
+
+            return View("ExternalLogin", model);
+        }
+
+        public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginModel model)
+        {
+            ExternalLoginInfo info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                _logger.LogWarning("Error loading external login information.");
+                ViewData["RemoteError"] = "Ошибка получения информации о внешнем провайдере авторизации";
+                return RedirectToAction("Login", new { model.ReturnUrl });
+            }
+
+            var user = new User { UserName = model.Email, Email = model.Email };
+
+            IEnumerable<string> errors = null;
+            string errorMsg = null;
+            IdentityResult userCreateResult = await _userManager.CreateAsync(user);
+            if (userCreateResult.Succeeded)
+            {
+                IdentityResult addLoginResult = await _userManager.AddLoginAsync(user, info);
+                if (addLoginResult.Succeeded)
+                {
+                    _logger.LogInformation("User {user} created an account using {provider} provider", user.UserName, info.LoginProvider);
+
+                    string userId = await _userManager.GetUserIdAsync(user);
+                    
+                    string code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+                    string callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId, code }, Request.Scheme);
+
+                    await _emailSender.SendEmailAsync(model.Email, "Подтверждение email", $"Для сброса пароля перейдите по <a href=\"{callbackUrl}\">ссылке</a>");// или введите код: <b>{code}</b>");
+
+                    //If account confirmation is required, we need to show the link if we don't have a real email sender
+                    if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                    {
+                        return RedirectToAction("RegisterConfirmation", new { model.Email });
+                    }
+
+                    await _signInManager.SignInAsync(user, false, info.LoginProvider);
+
+                    return LocalRedirect(model.ReturnUrl ?? "~/");
+                }
+
+                if (addLoginResult.Errors.Any())
+                {
+                    errors = addLoginResult.Errors.Select(x => $"{x.Code}: {x.Description}");
+                    errorMsg = string.Join(", ", errors);
+                    _logger.LogWarning("Ext. Login Conf. add login error: {error}", errorMsg);
+                }
+            }
+
+            if (userCreateResult.Errors.Any())
+            {
+                errors = userCreateResult.Errors.Select(x => $"{x.Code}: {x.Description}");
+                errorMsg = string.Join(", ", errors);
+                _logger.LogWarning("Ext. Login Conf. user create error: {error}", errorMsg);
+            }
+
+            return RedirectToAction("Login");
+        }
+
+
+        public async Task<IActionResult> ConfirmEmail(long userId, string code)
+        {
+            if (userId <= 0 || code == null)
+            {
+                return LocalRedirect("~/");
+            }
+
+            User user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+            {
+                return LocalRedirect("~/");
+            }
+
+            string token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
+            IdentityResult res = await _userManager.ConfirmEmailAsync(user, token);
+
+            ViewBag["Message"] = res.Succeeded ? "Спасибо за подтверждение email" : "Не удалось подтвердить email";
+            
+            if (res.Succeeded)
+            {
+                _logger.LogWarning("Cannot confirm {user} email", user.UserName);
+            }
+
+            ViewData["Title"] = "Подтверждение email";
+            return View("Common");
         }
 
 
@@ -105,7 +258,7 @@ namespace IdentitySandboxApp.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> LoginWith2fa(string returnUrl = null, bool rememberMe = false)
+        public async Task<IActionResult> LoginWith2Fa(string returnUrl = null, bool rememberMe = false)
         {
             User user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
             
@@ -120,7 +273,7 @@ namespace IdentitySandboxApp.Controllers
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> LoginWith2fa(LoginWith2faModel model)
+        public async Task<IActionResult> LoginWith2Fa(LoginWith2faModel model)
         {
             User user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
             if(user == null)
@@ -198,7 +351,7 @@ namespace IdentitySandboxApp.Controllers
             if (res.IsLockedOut)
             {
                 _logger.LogWarning("{user} is locked out", user.UserName);
-                return RedirectToAction("Locked");
+                return RedirectToAction("Lockout");
             }
 
             _logger.LogWarning("{user} is entered wrong recovery code", user.UserName);
@@ -238,7 +391,9 @@ namespace IdentitySandboxApp.Controllers
 
         public IActionResult ForgotPasswordConfirmation()
         {
-            return View();
+            ViewData["Title"] = "Восстановление пароля";
+            ViewData["Message"] = "Проверьте ваш email для сброса пароля";
+            return View("Common");
         }
 
         [HttpGet]
