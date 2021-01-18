@@ -32,9 +32,192 @@ namespace IdentitySandboxApp.Controllers
             _emailSender = emailSender;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound("Unable to load user");
+            }
+
+            await LoadAsync(user);
+            return View(model);
+        }
+
+        public async Task<IActionResult> Submit()
+        {
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound($"Unable to load user");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                await LoadAsync(user);
+                return View("Index");
+            }
+
+            var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
+            if (model.PhoneNumber != phoneNumber)
+            {
+                var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, model.PhoneNumber);
+                if (!setPhoneResult.Succeeded)
+                {
+                    StatusMessage = "Unexpected error when trying to set phone number.";
+                    return RedirectToPage();
+                }
+            }
+
+            await _signInManager.RefreshSignInAsync(user);
+            StatusMessage = "Your profile has been updated";
+            return View("Index", model);
+        }
+
+        private async Task LoadAsync(User user)
+        {
+            var userName = await _userManager.GetUserNameAsync(user);
+            var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
+
+            Username = userName;
+
+            Input = new InputModel
+            {
+                PhoneNumber = phoneNumber
+            };
+        }
+
+
+        public async Task<IActionResult> PersonalData()
+        {
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction($"Unable to load user");
+            }
+
             return View();
+        }
+        
+        [HttpGet]
+        public async Task<IActionResult> ResetAuthenticator()
+        {
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> ResetAuthenticator()
+        {
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            await _userManager.SetTwoFactorEnabledAsync(user, false);
+            await _userManager.ResetAuthenticatorKeyAsync(user);
+            _logger.LogInformation("User with ID '{UserId}' has reset their authentication app key.", user.Id);
+            
+            await _signInManager.RefreshSignInAsync(user);
+            StatusMessage = "Your authenticator app key has been reset, you will need to configure your authenticator app using the new key.";
+
+            return RedirectToPage("EnableAuthenticator");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ResetAuthenticator()
+        {
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            bool hasPassword = await _userManager.HasPasswordAsync(user);
+
+            if (hasPassword)
+            {
+                return RedirectToPage("./ChangePassword");
+            }
+
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> ResetAuthenticator()
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            IdentityResult addPasswordResult = await _userManager.AddPasswordAsync(user, model.NewPassword);
+            if (!addPasswordResult.Succeeded)
+            {
+                foreach (var error in addPasswordResult.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+
+                return View(model);
+            }
+
+            await _signInManager.RefreshSignInAsync(user);
+            StatusMessage = "Your password has been set.";
+
+            return View(model);
+        }
+        
+        [HttpGet]
+        public async Task<IActionResult> ShowRecoveryCodes()
+        {
+            if (RecoveryCodes == null || RecoveryCodes.Length == 0)
+            {
+                return RedirectToAction("TwoFactorAuthentication");
+            }
+
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> TwoFactorAuthentication()
+        {
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            HasAuthenticator = await _userManager.GetAuthenticatorKeyAsync(user) != null;
+            Is2faEnabled = await _userManager.GetTwoFactorEnabledAsync(user);
+            IsMachineRemembered = await _signInManager.IsTwoFactorClientRememberedAsync(user);
+            RecoveryCodesLeft = await _userManager.CountRecoveryCodesAsync(user);
+
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> TwoFactorAuthentication()
+        {
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            await _signInManager.ForgetTwoFactorClientAsync();
+            StatusMessage = "The current browser has been forgotten. When you login again from this browser you will be prompted for your 2fa code.";
+            return View(model);
         }
 
         public IActionResult Lockout()
@@ -1158,6 +1341,47 @@ namespace IdentitySandboxApp.Controllers
 
             StatusMessage = "The external login was added.";
             return RedirectToPage();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GenerateRecoveryCodes()
+        {
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            bool isTwoFactorEnabled = await _userManager.GetTwoFactorEnabledAsync(user);
+            if (!isTwoFactorEnabled)
+            {
+                return RedirectToAction("Index");
+            }
+
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> GenerateRecoveryCodes()
+        {
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            bool isTwoFactorEnabled = await _userManager.GetTwoFactorEnabledAsync(user);
+            var userId = await _userManager.GetUserIdAsync(user);
+            if (!isTwoFactorEnabled)
+            {
+                return RedirectToAction("Index");
+            }
+
+            IEnumerable<string> recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
+            RecoveryCodes = recoveryCodes.ToArray();
+
+            _logger.LogInformation("User {UserId} has generated new 2FA recovery codes", user.UserName);
+            StatusMessage = "You have generated new recovery codes.";
+            return RedirectToPage("ShowRecoveryCodes");
         }
 
         #endregion
