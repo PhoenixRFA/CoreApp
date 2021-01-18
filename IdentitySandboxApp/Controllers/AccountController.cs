@@ -12,6 +12,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
+using System.Text.Json;
+using System.Text.Encodings.Web;
 
 namespace IdentitySandboxApp.Controllers
 {
@@ -56,7 +58,7 @@ namespace IdentitySandboxApp.Controllers
                 //TODO Extract method and cache GetExternalAuthenticationSchemesAsync result
                 ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList()
             };
-            
+
             return View(model);
         }
         [HttpPost]
@@ -64,7 +66,7 @@ namespace IdentitySandboxApp.Controllers
         {
             //TODO Extract validation
             #region Validation
-            
+
             bool isEmailEmpty = false;
             if (string.IsNullOrWhiteSpace(model.Email))
             {
@@ -92,26 +94,26 @@ namespace IdentitySandboxApp.Controllers
                 ModelState.AddModelError(nameof(model.ConfirmPassword), "Введите пароль");
                 isPassConfirmEmpty = true;
             }
-            
+
             bool isDateEmpty = false;
             if (string.IsNullOrWhiteSpace(model.DateOfBirth))
             {
                 ModelState.AddModelError(nameof(model.DateOfBirth), "Введите дату рождения");
                 isDateEmpty = true;
             }
-            
-            if(isEmailEmpty || isUsernameEmpty || isPassEmpty || isPassConfirmEmpty || isDateEmpty)
+
+            if (isEmailEmpty || isUsernameEmpty || isPassEmpty || isPassConfirmEmpty || isDateEmpty)
             {
                 return View(model);
             }
 
             bool isPasswordsNotSame = false;
-            if(model.Password != model.ConfirmPassword)
+            if (model.Password != model.ConfirmPassword)
             {
                 ModelState.AddModelError(nameof(model.ConfirmPassword), "Пароли должны совпадать");
                 isPasswordsNotSame = true;
             }
-            
+
             bool isEmailExists = false;
             if (await _userManager.FindByEmailAsync(model.Email) != null)
             {
@@ -132,12 +134,12 @@ namespace IdentitySandboxApp.Controllers
                 ModelState.AddModelError(nameof(model.DateOfBirth), "Не распознан формат даты");
                 isDateInvalid = true;
             }
-            
+
             if (isPasswordsNotSame || isEmailExists || isUsernameExists || isDateInvalid)
             {
                 return View(model);
             }
-            
+
             #endregion
 
             var user = new User
@@ -154,7 +156,7 @@ namespace IdentitySandboxApp.Controllers
                 _logger.LogInformation("New user {user} created", user.UserName);
 
                 string userId = await _userManager.GetUserIdAsync(user);
-                
+
                 //TODO Extract method
                 #region Generate confirm ermail token
 
@@ -171,7 +173,7 @@ namespace IdentitySandboxApp.Controllers
                 {
                     return RedirectToAction("RegisterConfirmation", new { email = model.Email, returnUrl = model.ReturnUrl });
                 }
-                
+
                 await _signInManager.SignInAsync(user, false);
                 return LocalRedirect(model.ReturnUrl ?? "~/");
             }
@@ -251,7 +253,7 @@ namespace IdentitySandboxApp.Controllers
                 _logger.LogWarning("{user} is locked out", model.Login);
                 return RedirectToAction("Lockout");
             }
-            
+
             //TODO See earlier
             ViewBag.ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             ViewBag.ReturnUrl = model.ReturnUrl;
@@ -274,8 +276,8 @@ namespace IdentitySandboxApp.Controllers
         public async Task<IActionResult> LoginWith2Fa(string returnUrl = null, bool rememberMe = false)
         {
             User user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
-            
-            if(user == null)
+
+            if (user == null)
             {
                 return RedirectToAction("Login");
             }
@@ -289,7 +291,7 @@ namespace IdentitySandboxApp.Controllers
         public async Task<IActionResult> LoginWith2Fa(LoginWith2faModel model)
         {
             User user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
-            if(user == null)
+            if (user == null)
             {
                 throw new InvalidOperationException("Unable to load two-factor authentication user");
             }
@@ -378,18 +380,18 @@ namespace IdentitySandboxApp.Controllers
         public IActionResult ExternalLogin(string provider, string returnUrl = null)
         {
             string redirectUrl = Url.Action("ExternalLoginCallback", new { returnUrl });
-            
+
             AuthenticationProperties properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
-            
+
             return new ChallengeResult(provider, properties);
         }
-        
+
         public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
         {
             if (remoteError != null)
             {
                 ViewData["RemoteError"] = remoteError;
-                return RedirectToAction("Login", new { ReturnUrl = returnUrl});
+                return RedirectToAction("Login", new { ReturnUrl = returnUrl });
             }
 
             ExternalLoginInfo info = await _signInManager.GetExternalLoginInfoAsync();
@@ -397,7 +399,7 @@ namespace IdentitySandboxApp.Controllers
             {
                 _logger.LogWarning("Error loading external login information.");
                 ViewData["RemoteError"] = "Ошибка получения информации о внешнем провайдере авторизации";
-                return RedirectToAction("Login", new { ReturnUrl = returnUrl});
+                return RedirectToAction("Login", new { ReturnUrl = returnUrl });
             }
 
             //Sign in the user with this external login provider if the user already has a login.
@@ -500,7 +502,7 @@ namespace IdentitySandboxApp.Controllers
                     _logger.LogInformation("User {user} created an account using {provider} provider", user.UserName, info.LoginProvider);
 
                     string userId = await _userManager.GetUserIdAsync(user);
-                    
+
                     string code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
@@ -557,7 +559,7 @@ namespace IdentitySandboxApp.Controllers
             }
 
             User user = await _userManager.FindByEmailAsync(email);
-            if(user == null || !await _userManager.IsEmailConfirmedAsync(user))
+            if (user == null || !await _userManager.IsEmailConfirmedAsync(user))
             {
                 return RedirectToAction("ForgotPasswordConfirmation");
             }
@@ -589,7 +591,7 @@ namespace IdentitySandboxApp.Controllers
 
             code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
 
-            return View(new ResetPasswordModel{Code = code});
+            return View(new ResetPasswordModel { Code = code });
         }
         [HttpPost]
         public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
@@ -619,21 +621,21 @@ namespace IdentitySandboxApp.Controllers
                 isPassConfirmEmpty = true;
             }
 
-            if(isEmailEmpty || isPassEmpty || isPassConfirmEmpty)
+            if (isEmailEmpty || isPassEmpty || isPassConfirmEmpty)
             {
                 return View();
             }
 
-            if(model.Password != model.ConfirmPassword)
+            if (model.Password != model.ConfirmPassword)
             {
                 ModelState.AddModelError(nameof(model.ConfirmPassword), "Пароли должны совпадать");
                 return View();
             }
-            
+
             #endregion
 
             User user = await _userManager.FindByEmailAsync(model.Email);
-            if(user == null)
+            if (user == null)
             {
                 return RedirectToAction("ResetPasswordConfirmation");
             }
@@ -682,7 +684,7 @@ namespace IdentitySandboxApp.Controllers
             IdentityResult res = await _userManager.ConfirmEmailAsync(user, token);
 
             ViewData["Message"] = res.Succeeded ? "Спасибо за подтверждение email" : "Не удалось подтвердить email";
-            
+
             if (!res.Succeeded)
             {
                 _logger.LogWarning("Cannot confirm {user} email", user.UserName);
@@ -691,8 +693,8 @@ namespace IdentitySandboxApp.Controllers
             ViewData["Title"] = "Подтверждение email";
             return View("Common");
         }
-        
-        
+
+
         [HttpGet]
         public IActionResult ResendEmailConfirmation()
         {
@@ -725,6 +727,437 @@ namespace IdentitySandboxApp.Controllers
 
             ViewData["Message"] = "Подтверждение отправлено на ваш email";
             return View();
+        }
+
+        #endregion
+
+
+        #region
+
+        [HttpGet]
+        public async Task<IActionResult> ChangePassword()
+        {
+            //TODO Remove or extract
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            bool hasPassword = await _userManager.HasPasswordAsync(user);
+            if (!hasPassword)
+            {
+                return RedirectToAction("SetPassword");
+            }
+
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(ChangePasswordModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            IdentityResult res = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+            if (!res.Succeeded)
+            {
+                foreach (var error in res.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+                return View(model);
+            }
+
+            //?
+            await _signInManager.RefreshSignInAsync(user);
+            _logger.LogInformation("User {user} changed password successfully", user.UserName);
+            model.Message = "Your password has been changed.";
+
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DeletePersonalData()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            var model = new DeletePersonalDataModel {
+                RequirePassword = await _userManager.HasPasswordAsync(user)
+            };
+
+            return View(model);
+        }
+        [HttpGet]
+        public async Task<IActionResult> DeletePersonalData(DeletePersonalDataModel model)
+        {
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            model.RequirePassword = await _userManager.HasPasswordAsync(user);
+
+            if (model.RequirePassword)
+            {
+                if (!await _userManager.CheckPasswordAsync(user, model.Password))
+                {
+                    ModelState.AddModelError(string.Empty, "Не верный пароль");
+                    return View();
+                }
+            }
+
+            IdentityResult result = await _userManager.DeleteAsync(user);
+            if (!result.Succeeded)
+            {
+                string errors = string.Join(" \n\r", result.Errors.Select(x => $"{x.Code}: {x.Description}"));
+                _logger.LogWarning("Error on {user} user delete.\r\nErrors: {errors}", user.UserName, errors);
+            }
+
+            await _signInManager.SignOutAsync();
+
+            _logger.LogInformation("User {user} deleted themselves", user.UserName);
+
+            return Redirect("~/");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Disable2fa()
+        {
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            if (!await _userManager.GetTwoFactorEnabledAsync(user))
+            {
+                return RedirectToAction("Index");
+            }
+
+            return View();
+        }
+        [HttpPost]
+        [ActionName("Disable2fa")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DoDisable2fa()
+        {
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            IdentityResult result = await _userManager.SetTwoFactorEnabledAsync(user, false);
+            if (!result.Succeeded)
+            {
+                string errors = string.Join(" \n\r", result.Errors.Select(x => $"{x.Code}: {x.Description}"));
+                _logger.LogWarning("Error on {user} user disabling 2fa.\r\nErrors: {errors}", user.UserName, errors);
+            }
+
+            _logger.LogInformation("User {user} has disabled 2fa", _userManager.GetUserId(User));
+            
+            ViewBag.Message = "Двухфакторная авторизация была отключена";
+            return RedirectToPage("TwoFactorAuthentication");
+        }
+
+        public async Task<IActionResult> DownloadPersonalData()
+        {
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            _logger.LogInformation("User {user} asked for their personal data", user);
+
+            //Only include personal data for download
+            var personalData = new Dictionary<string, string>();
+            //TODO Reflexy?
+            var personalDataProps = typeof(User).GetProperties().Where(x => Attribute.IsDefined(x, typeof(PersonalDataAttribute)));
+            foreach (var p in personalDataProps)
+            {
+                personalData.Add(p.Name, p.GetValue(user)?.ToString() ?? "null");
+            }
+
+            IList<UserLoginInfo> logins = await _userManager.GetLoginsAsync(user);
+            foreach (var l in logins)
+            {
+                personalData.Add($"{l.LoginProvider} external login provider key", l.ProviderKey);
+            }
+
+            //TODO ?
+            Response.Headers.Add("Content-Disposition", "attachment; filename=PersonalData.json");
+            return new FileContentResult(JsonSerializer.SerializeToUtf8Bytes(personalData), "application/json");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Email()
+        {
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            string email = await _userManager.GetEmailAsync(user);
+
+            var model = new EmailManageModel {
+                Email = email,
+                NewEmail = email,
+                IsEmailConfirmed = await _userManager.IsEmailConfirmedAsync(user)
+            };
+
+            return View(model);
+        }
+
+        public async Task<IActionResult> ChangeEmail(EmailManageModel model)
+        {
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            string email = await _userManager.GetEmailAsync(user);
+            model.Email = email;
+            model.IsEmailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
+
+            if (!ModelState.IsValid)
+            {
+                return View("Email", model);
+            }
+
+            if (model.NewEmail != email)
+            {
+                string userId = await _userManager.GetUserIdAsync(user);
+                string code = await _userManager.GenerateChangeEmailTokenAsync(user, model.NewEmail);
+                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                string callbackUrl = Url.Action("ConfirmEmailChange", "Account", new { userId, email = model.NewEmail, code }, Request.Scheme);
+                await _emailSender.SendEmailAsync(model.NewEmail, "Подтверждение Email'а", $"Для подтверждения email'а - перейдите по ссылке: <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>подтвердить</a>");
+
+                model.Message = "Подтверждение было отправлно на email";
+                return View("Email", model);
+            }
+
+            model.Message = "Email не был изменен";
+            return View("Email", model);
+        }
+
+        public async Task<IActionResult> SendVerificationEmail(EmailManageModel model)
+        {
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            string email = await _userManager.GetEmailAsync(user);
+            model.Email = email;
+            model.IsEmailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
+
+            if (!ModelState.IsValid)
+            {
+                return View("Email", model);
+            }
+
+            string userId = await _userManager.GetUserIdAsync(user);
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+            string callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = userId, code = code }, Request.Scheme);
+            await _emailSender.SendEmailAsync(email, "Подтверждение Email'а", $"Для подтверждения email'а - перейдите по ссылке: <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>подтвердить</a>");
+
+            model.Message = "Подтверждение было отправлно на email";
+
+            return View("Email", model);
+        }
+
+        //TODO fix methods
+        [HttpGet]
+        public async Task<IActionResult> EnableAuthenticator()
+        {
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            await LoadSharedKeyAndQrCodeUriAsync(user);
+
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> EnableAuthenticator(EnableAuthenticatorModel model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                await LoadSharedKeyAndQrCodeUriAsync(user);
+                return View(model);
+            }
+
+            // Strip spaces and hypens
+            var verificationCode = Input.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
+
+            var is2faTokenValid = await _userManager.VerifyTwoFactorTokenAsync(
+                user, _userManager.Options.Tokens.AuthenticatorTokenProvider, verificationCode);
+
+            if (!is2faTokenValid)
+            {
+                ModelState.AddModelError("Code", "Verification code is invalid.");
+                await LoadSharedKeyAndQrCodeUriAsync(user);
+                return Page();
+            }
+
+            await _userManager.SetTwoFactorEnabledAsync(user, true);
+            var userId = await _userManager.GetUserIdAsync(user);
+            _logger.LogInformation("User with ID '{UserId}' has enabled 2FA with an authenticator app.", userId);
+
+            StatusMessage = "Your authenticator app has been verified.";
+
+            if (await _userManager.CountRecoveryCodesAsync(user) == 0)
+            {
+                var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
+                RecoveryCodes = recoveryCodes.ToArray();
+                return RedirectToPage("ShowRecoveryCodes");
+            }
+            else
+            {
+                return RedirectToAction("TwoFactorAuthentication");
+            }
+        }
+
+        private async Task LoadSharedKeyAndQrCodeUriAsync(User user)
+        {
+            // Load the authenticator key & QR code URI to display on the form
+            var unformattedKey = await _userManager.GetAuthenticatorKeyAsync(user);
+            if (string.IsNullOrEmpty(unformattedKey))
+            {
+                await _userManager.ResetAuthenticatorKeyAsync(user);
+                unformattedKey = await _userManager.GetAuthenticatorKeyAsync(user);
+            }
+
+            SharedKey = FormatKey(unformattedKey);
+
+            var email = await _userManager.GetEmailAsync(user);
+            AuthenticatorUri = GenerateQrCodeUri(email, unformattedKey);
+        }
+
+        private string FormatKey(string unformattedKey)
+        {
+            var result = new StringBuilder();
+            int currentPosition = 0;
+            while (currentPosition + 4 < unformattedKey.Length)
+            {
+                result.Append(unformattedKey.Substring(currentPosition, 4)).Append(" ");
+                currentPosition += 4;
+            }
+            if (currentPosition < unformattedKey.Length)
+            {
+                result.Append(unformattedKey.Substring(currentPosition));
+            }
+
+            return result.ToString().ToLowerInvariant();
+        }
+
+        private string GenerateQrCodeUri(string email, string unformattedKey)
+        {
+            return string.Format(AuthenticatorUriFormat, _urlEncoder.Encode("IdentitySandboxApp"), _urlEncoder.Encode(email), unformattedKey);
+        }
+
+
+        //TODO complete methods
+        [HttpGet]
+        public async Task<IActionResult> ExternalLogins()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index"); ;
+            }
+
+            CurrentLogins = await _userManager.GetLoginsAsync(user);
+            OtherLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync())
+                .Where(auth => CurrentLogins.All(ul => auth.Name != ul.LoginProvider))
+                .ToList();
+            ShowRemoveButton = user.PasswordHash != null || CurrentLogins.Count > 1;
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> LoginAsync(string loginProvider, string providerKey)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            var result = await _userManager.RemoveLoginAsync(user, loginProvider, providerKey);
+            if (!result.Succeeded)
+            {
+                StatusMessage = "The external login was not removed.";
+                return View("ExternalLogins");
+            }
+
+            await _signInManager.RefreshSignInAsync(user);
+            StatusMessage = "The external login was removed.";
+            return View("ExternalLogins");
+        }
+        [HttpPost]
+        public async Task<IActionResult> LinkLoginAsync(string provider)
+        {
+            // Clear the existing external cookie to ensure a clean login process
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+
+            // Request a redirect to the external login provider to link a login for the current user
+            var redirectUrl = Url.Page("./ExternalLogins", pageHandler: "LinkLoginCallback");
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, _userManager.GetUserId(User));
+            return new ChallengeResult(provider, properties);
+        }
+        [HttpGet]
+        public async Task<IActionResult> LinkLoginCallbackAsync()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound($"Unable to load user with ID 'user.Id'.");
+            }
+
+            var info = await _signInManager.GetExternalLoginInfoAsync(user.Id.ToString());
+            if (info == null)
+            {
+                throw new InvalidOperationException($"Unexpected error occurred loading external login info for user with ID '{user.Id}'.");
+            }
+
+            var result = await _userManager.AddLoginAsync(user, info);
+            if (!result.Succeeded)
+            {
+                StatusMessage = "The external login was not added. External logins can only be associated with one account.";
+                return RedirectToPage();
+            }
+
+            // Clear the existing external cookie to ensure a clean login process
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+
+            StatusMessage = "The external login was added.";
+            return RedirectToPage();
         }
 
         #endregion

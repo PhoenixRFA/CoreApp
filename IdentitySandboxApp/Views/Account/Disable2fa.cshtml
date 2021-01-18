@@ -1,0 +1,22 @@
+﻿@{
+    ViewData["Title"] = "Отключение двухфакторной авторизации";
+}
+
+@*<partial name="_StatusMessage" for="StatusMessage" />*@
+<h2>@ViewData["Title"]</h2>
+
+<div class="alert alert-warning" role="alert">
+    <p>
+        <strong>Это действие отключает двухфакторную авторизацию</strong>
+    </p>
+    <p>
+        Отключение двухфакторной авториации <strong>не</strong> изменяет ключи в приложении авторизации.
+        Если вы хотите изменить ключ, используемый в приложении авторизации, вам следует <a asp-action="ResetAuthenticator">сбросить ключи авторизации</a>
+    </p>
+</div>
+
+<div>
+    <form method="post" class="form-group" asp-antiforgery="true">
+        <button class="btn btn-danger" type="submit">Отключение двухфакторной авторизации</button>
+    </form>
+</div>

@@ -1,0 +1,30 @@
+﻿@using IdentitySandboxApp.Models.Identity
+@model DeletePersonalDataModel
+@{
+    ViewData["Title"] = "Уалить персональные данные";
+}
+
+<h4>@ViewData["Title"]</h4>
+
+<div class="alert alert-warning" role="alert">
+    <p><strong>Удаление этих данных полностью удалит ваш аккаунт, без возможности восстановления</strong></p>
+</div>
+
+<div>
+    <form id="delete-user" method="post" class="form-group">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        @if (Model.RequirePassword)
+        {
+            <div class="form-group">
+                <label>Пароль</label>
+                <input name="password" type="password" class="form-control" />
+                <span asp-validation-for="@Model.Password" class="text-danger"></span>
+            </div>
+        }
+        <button class="btn btn-danger" type="submit">Удалить данные и аккаунт</button>
+    </form>
+</div>
+
+@section Scripts {
+    @*<partial name="_ValidationScriptsPartial" />*@
+}
