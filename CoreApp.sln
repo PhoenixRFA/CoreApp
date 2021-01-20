@@ -24,7 +24,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCoreApp", "EFCoreApp\EFCo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityApp", "IdentityApp\IdentityApp.csproj", "{4A9F7E23-687B-42CE-9BAE-FD83BFA98469}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentitySandboxApp", "IdentitySandboxApp\IdentitySandboxApp.csproj", "{688219A7-2AB0-4D52-AE13-707E256DE174}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentitySandboxApp", "IdentitySandboxApp\IdentitySandboxApp.csproj", "{688219A7-2AB0-4D52-AE13-707E256DE174}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -401,12 +401,12 @@ namespace IdentitySandboxApp.Controllers
 
         #endregion
 
-        #region External login
+        #region External login +
 
         [HttpGet]
         public IActionResult ExternalLogin() => RedirectToAction("Login");
 
-        [HttpPost] //Request a redirect to the external login provider
+        [HttpPost] //Вызыватся при попытке залогиниться через внешний поставщик
         public IActionResult ExternalLogin(string provider, string returnUrl = null)
         {
             string redirectUrl = Url.Action("ExternalLoginCallback", new { returnUrl });
@@ -416,6 +416,7 @@ namespace IdentitySandboxApp.Controllers
             return new ChallengeResult(provider, properties);
         }
 
+        //Вызывается сервером внешней авторизации, т.е. сюда идет редирект
         public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
         {
             if (remoteError != null)
@@ -446,6 +447,7 @@ namespace IdentitySandboxApp.Controllers
                 return RedirectToAction("Lockout");
             }
 
+            //Если не удалось войти из-за того, что нет такого аккаунта - регистрируем его в системе
             var model = new ExternalLoginModel
             {
                 ReturnUrl = returnUrl,
@@ -461,6 +463,7 @@ namespace IdentitySandboxApp.Controllers
             return View("ExternalLogin", model);
         }
 
+        //Вызывается при завершении регистрации от через внешний логин
         public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginModel model)
         {
             bool isEmailEmpty = false;
@@ -516,13 +519,15 @@ namespace IdentitySandboxApp.Controllers
                 return RedirectToAction("Login", new { model.ReturnUrl });
             }
 
+            int idx = model.Email.IndexOf('@');
+
             var user = new User {
-                UserName = model.Email,
+                UserName = model.Email.Substring(0, idx+1),
                 Email = model.Email
             };
 
-            IEnumerable<string> errors = null;
-            string errorMsg = null;
+            IEnumerable<string> errors;
+            string errorMsg;
             IdentityResult userCreateResult = await _userManager.CreateAsync(user);
             if (userCreateResult.Succeeded)
             {
@@ -1321,7 +1326,7 @@ namespace IdentitySandboxApp.Controllers
 
         #endregion
 
-        #region External Logins
+        #region External Logins +
 
         [HttpGet]
         public async Task<IActionResult> ExternalLogins()
@@ -1354,6 +1359,8 @@ namespace IdentitySandboxApp.Controllers
             {
                 return NotFound("Unable to load user");
             }
+            
+            IdentityResult result = await _userManager.RemoveLoginAsync(user, loginProvider, providerKey);
 
             IList<UserLoginInfo> currentLogins = await _userManager.GetLoginsAsync(user);
             
@@ -1367,8 +1374,7 @@ namespace IdentitySandboxApp.Controllers
                 OtherLogins = otherLogins,
                 ShowRemoveButton = user.PasswordHash != null || currentLogins.Count > 1
             };
-            
-            IdentityResult result = await _userManager.RemoveLoginAsync(user, loginProvider, providerKey);
+
             if (!result.Succeeded)
             {
                 ViewData["Message"] = "Внешний логин НЕ был удален";
@@ -1405,6 +1411,8 @@ namespace IdentitySandboxApp.Controllers
                 return RedirectToAction("Index");
                 //Unexpected error occurred loading external login info for user
             }
+
+            IdentityResult result = await _userManager.AddLoginAsync(user, info);
             
             IList<UserLoginInfo> currentLogins = await _userManager.GetLoginsAsync(user);
             
@@ -1418,8 +1426,7 @@ namespace IdentitySandboxApp.Controllers
                 OtherLogins = otherLogins,
                 ShowRemoveButton = user.PasswordHash != null || currentLogins.Count > 1
             };
-
-            IdentityResult result = await _userManager.AddLoginAsync(user, info);
+            
             if (!result.Succeeded)
             {
                 ViewData["Message"] = "Внешний логин НЕ был добавлен";
@@ -1436,7 +1443,7 @@ namespace IdentitySandboxApp.Controllers
         #endregion
 
 
-        #region JWT
+        #region JWT +
 
         public async Task<IActionResult> GenerateJWTToken()
         {

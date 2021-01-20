@@ -56,6 +56,13 @@ namespace IdentitySandboxApp
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = AuthOptions.GetKey()
                     };
+                })
+                .AddGoogle(opts =>
+                {
+                    IConfigurationSection credentials = Configuration.GetSection("Auth:Google");
+
+                    opts.ClientId = credentials["ClientId"];
+                    opts.ClientSecret = credentials["ClientSecret"];
                 });
 
             services.Configure<IdentityOptions>(opts =>
