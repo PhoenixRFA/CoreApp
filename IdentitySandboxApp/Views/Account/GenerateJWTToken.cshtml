@@ -1,0 +1,25 @@
+﻿@model GenerateJWTTokenModel
+@{
+    ViewData["Title"] = "Генерация JWT токена";
+}
+
+<h4>@ViewData["Title"]</h4>
+<div class="alert alert-warning" role="alert">
+    <p>
+        <strong>Сохраните токен в безопасном месте!</strong>
+    </p>
+    <p>Токен используется для запросов к API</p>
+    <p>/api/test - для теста</p>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <strong>Token A:</strong>
+        <code class="recovery-code">@Model.TokenA</code>
+        <br />
+        <strong>Token B:</strong>
+        <code class="recovery-code">@Model.TokenB</code>
+        <br />
+        <strong>Истекает:</strong>
+        <span>@Model.ValidTo</span>
+    </div>
+</div>

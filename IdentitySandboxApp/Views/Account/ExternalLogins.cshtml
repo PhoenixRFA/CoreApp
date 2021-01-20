@@ -3,7 +3,7 @@
     ViewData["Title"] = "Управление внешними сервисами";
 }
 
-<partial name="_AlertPartial" />
+<partial name="_AlertPartial" model="@ViewData["Message"]"/>
 @if (Model.CurrentLogins?.Count > 0)
 {
     <h4>Зарегистрированные логины</h4>

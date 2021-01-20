@@ -9,6 +9,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+//using Microsoft.OpenApi.Models;
+using Microsoft.IdentityModel.Tokens;
 
 namespace IdentitySandboxApp
 {
@@ -29,11 +32,31 @@ namespace IdentitySandboxApp
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddDatabaseDeveloperPageExceptionFilter();
 
-            services.AddIdentity<User, Role>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddIdentity<User, Role>()
+                //.AddJwtBearer()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
+                .AddDefaultTokenProviders()
+                .AddTokenProvider<DigitsTokenProvider>("Digits");
                 //.AddTokenProvider<DataProtectorTokenProvider<User>>(TokenOptions.DefaultProvider);
             services.AddControllersWithViews();
+
+            services.AddAuthentication()
+                .AddJwtBearer(opts =>
+                {
+                    opts.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateAudience = true,
+                        ValidAudience = AuthOptions.AUDIENCE,
+
+                        ValidateIssuer = true,
+                        ValidIssuer = AuthOptions.ISSUER,
+
+                        ValidateLifetime = true,
+                        
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = AuthOptions.GetKey()
+                    };
+                });
 
             services.Configure<IdentityOptions>(opts =>
             {
@@ -45,8 +68,25 @@ namespace IdentitySandboxApp
                 opts.Password.RequiredUniqueChars = 1;
 
                 opts.User.RequireUniqueEmail = true;
+                opts.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
 
                 opts.SignIn.RequireConfirmedAccount = true;
+
+                opts.Lockout.MaxFailedAccessAttempts = 2;
+
+                opts.Tokens.ChangeEmailTokenProvider = "Digits";
+                opts.Tokens.EmailConfirmationTokenProvider = "Email";
+                opts.Tokens.ChangePhoneNumberTokenProvider = "Phone";
+                opts.Tokens.PasswordResetTokenProvider = "Authenticator";
+            });
+            services.Configure<PasswordHasherOptions>(opts =>
+            {
+                opts.IterationCount = 12000;
+                opts.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV3;
+            });
+            services.ConfigureApplicationCookie(opts =>
+            {
+                opts.Cookie.Name = "IdentityCookie";
             });
         }
 

@@ -15,6 +15,10 @@ using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 using System.Text.Json;
 using System.Text.Encodings.Web;
 using System.Web;
+using IdentitySandboxApp.Infrastructure;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IdentitySandboxApp.Controllers
 {
@@ -57,7 +61,8 @@ namespace IdentitySandboxApp.Controllers
             {
                 return NotFound("Unable to load user");
             }
-            
+
+            model.Username = user.UserName;
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -757,7 +762,8 @@ namespace IdentitySandboxApp.Controllers
         #endregion
 
 
-        #region Password Manage
+
+        #region Password Manage +
 
         [HttpGet]
         public async Task<IActionResult> SetPassword()
@@ -771,7 +777,8 @@ namespace IdentitySandboxApp.Controllers
             bool hasPassword = await _userManager.HasPasswordAsync(user);
             if (hasPassword)
             {
-                return RedirectToAction("ChangePassword");
+                var model = new ChangePasswordModel();
+                return RedirectToAction("ChangePassword", model);
             }
 
             return View();
@@ -790,6 +797,7 @@ namespace IdentitySandboxApp.Controllers
                 return NotFound("Unable to load user");
             }
 
+            //Годится только для установки пароля, если его нет
             IdentityResult result = await _userManager.AddPasswordAsync(user, model.NewPassword);
             if (!result.Succeeded)
             {
@@ -860,7 +868,7 @@ namespace IdentitySandboxApp.Controllers
 
         #endregion
 
-        #region PersonalData
+        #region PersonalData +
 
         public IActionResult PersonalData()
         {
@@ -882,7 +890,7 @@ namespace IdentitySandboxApp.Controllers
 
             return View(model);
         }
-        [HttpGet]
+        [HttpPost]
         public async Task<IActionResult> DeletePersonalData(DeletePersonalDataModel model)
         {
             User user = await _userManager.GetUserAsync(User);
@@ -898,7 +906,7 @@ namespace IdentitySandboxApp.Controllers
                 if (!await _userManager.CheckPasswordAsync(user, model.Password))
                 {
                     ModelState.AddModelError(string.Empty, "Не верный пароль");
-                    return View();
+                    return View(model);
                 }
             }
 
@@ -928,7 +936,7 @@ namespace IdentitySandboxApp.Controllers
 
             //Only include personal data for download
             var personalData = new Dictionary<string, string>();
-            //TODO Reflexy?
+            //User Reflction to get fields with attributes
             var personalDataProps = typeof(User).GetProperties().Where(x => Attribute.IsDefined(x, typeof(PersonalDataAttribute)));
             foreach (var p in personalDataProps)
             {
@@ -948,7 +956,7 @@ namespace IdentitySandboxApp.Controllers
 
         #endregion
 
-        #region Email management
+        #region Email management +
 
         [HttpGet]
         public async Task<IActionResult> Email()
@@ -958,13 +966,11 @@ namespace IdentitySandboxApp.Controllers
             {
                 return NotFound("Unable to load user");
             }
-
-            string email = await _userManager.GetEmailAsync(user);
-
+            
             var model = new EmailManageModel {
-                Email = email,
-                NewEmail = email,
-                IsEmailConfirmed = await _userManager.IsEmailConfirmedAsync(user)
+                Email = user.Email,
+                NewEmail = user.Email,
+                IsEmailConfirmed = user.EmailConfirmed
             };
 
             return View(model);
@@ -978,18 +984,17 @@ namespace IdentitySandboxApp.Controllers
                 return NotFound("Unable to load user");
             }
 
-            string email = await _userManager.GetEmailAsync(user);
-            model.Email = email;
-            model.IsEmailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
+            model.Email = user.Email;
+            model.IsEmailConfirmed = user.EmailConfirmed;
 
             if (!ModelState.IsValid)
             {
                 return View("Email", model);
             }
 
-            if (model.NewEmail != email)
+            if (model.NewEmail != user.Email)
             {
-                string userId = await _userManager.GetUserIdAsync(user);
+                string userId = user.Id.ToString();
                 string code = await _userManager.GenerateChangeEmailTokenAsync(user, model.NewEmail);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                 string callbackUrl = Url.Action("ConfirmEmailChange", "Account", new { userId, email = model.NewEmail, code }, Request.Scheme);
@@ -1011,20 +1016,19 @@ namespace IdentitySandboxApp.Controllers
                 return NotFound("Unable to load user");
             }
 
-            string email = await _userManager.GetEmailAsync(user);
-            model.Email = email;
-            model.IsEmailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
+            model.Email = user.Email;
+            model.IsEmailConfirmed = user.EmailConfirmed;
 
             if (!ModelState.IsValid)
             {
                 return View("Email", model);
             }
 
-            string userId = await _userManager.GetUserIdAsync(user);
+            string userId = user.Id.ToString();
             string code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
             string callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId, code }, Request.Scheme);
-            await _emailSender.SendEmailAsync(email, "Подтверждение Email'а", $"Для подтверждения email'а - перейдите по ссылке: <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>подтвердить</a>");
+            await _emailSender.SendEmailAsync(user.Email, "Подтверждение Email'а", $"Для подтверждения email'а - перейдите по ссылке: <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>подтвердить</a>");
 
             model.Message = "Подтверждение было отправлно на email";
 
@@ -1071,9 +1075,9 @@ namespace IdentitySandboxApp.Controllers
                 return NotFound("Unable to load user");
             }
 
-            await LoadSharedKeyAndQrCodeUriAsync(user);
+            EnableAuthenticatorModel model = await LoadSharedKeyAndQrCodeUriAsync(user);
 
-            return View();
+            return View(model);
         }
         [HttpPost]
         public async Task<IActionResult> EnableAuthenticator(EnableAuthenticatorModel model)
@@ -1086,7 +1090,8 @@ namespace IdentitySandboxApp.Controllers
 
             if (!ModelState.IsValid)
             {
-                await LoadSharedKeyAndQrCodeUriAsync(user);
+                model = await LoadSharedKeyAndQrCodeUriAsync(user);
+
                 return View(model);
             }
 
@@ -1099,7 +1104,8 @@ namespace IdentitySandboxApp.Controllers
             if (!is2faTokenValid)
             {
                 ModelState.AddModelError(nameof(model.Code), "Не правильный код");
-                await LoadSharedKeyAndQrCodeUriAsync(user);
+                model = await LoadSharedKeyAndQrCodeUriAsync(user);
+
                 return View(model);
             }
 
@@ -1119,10 +1125,8 @@ namespace IdentitySandboxApp.Controllers
 
                 return RedirectToPage("ShowRecoveryCodes", recoveryCodesModel);
             }
-            else
-            {
-                return RedirectToAction("TwoFactorAuthentication");
-            }
+
+            return RedirectToAction("TwoFactorAuthentication");
         }
 
 
@@ -1328,14 +1332,16 @@ namespace IdentitySandboxApp.Controllers
                 return NotFound("Unable to load user");
             }
 
-            var otherLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync())
-                .Where(auth => CurrentLogins.All(ul => auth.Name != ul.LoginProvider))
+            IList<UserLoginInfo> currentLogins = await _userManager.GetLoginsAsync(user);
+
+            List<AuthenticationScheme> otherLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync())
+                .Where(auth => currentLogins.All(ul => auth.Name != ul.LoginProvider))
                 .ToList();
 
-            var model = new ExternalLoginModel {
-                CurrentLogins = await _userManager.GetLoginsAsync(user),
+            var model = new ExternalLoginsModel {
+                CurrentLogins = currentLogins.ToList(),
                 OtherLogins = otherLogins,
-                ShowRemoveButton = user.PasswordHash != null || CurrentLogins.Count > 1
+                ShowRemoveButton = user.PasswordHash != null || currentLogins.Count > 1
             };
             
             return View(model);
@@ -1349,11 +1355,17 @@ namespace IdentitySandboxApp.Controllers
                 return NotFound("Unable to load user");
             }
 
-            var model = new ExternalLoginModel
+            IList<UserLoginInfo> currentLogins = await _userManager.GetLoginsAsync(user);
+            
+            List<AuthenticationScheme> otherLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync())
+                .Where(auth => currentLogins.All(ul => auth.Name != ul.LoginProvider))
+                .ToList();
+
+            var model = new ExternalLoginsModel
             {
-                CurrentLogins = await _userManager.GetLoginsAsync(user),
+                CurrentLogins = currentLogins.ToList(),
                 OtherLogins = otherLogins,
-                ShowRemoveButton = user.PasswordHash != null || CurrentLogins.Count > 1
+                ShowRemoveButton = user.PasswordHash != null || currentLogins.Count > 1
             };
             
             IdentityResult result = await _userManager.RemoveLoginAsync(user, loginProvider, providerKey);
@@ -1393,13 +1405,20 @@ namespace IdentitySandboxApp.Controllers
                 return RedirectToAction("Index");
                 //Unexpected error occurred loading external login info for user
             }
+            
+            IList<UserLoginInfo> currentLogins = await _userManager.GetLoginsAsync(user);
+            
+            List<AuthenticationScheme> otherLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync())
+                .Where(auth => currentLogins.All(ul => auth.Name != ul.LoginProvider))
+                .ToList();
 
-            var model = new ExternalLoginModel
+            var model = new ExternalLoginsModel
             {
-                CurrentLogins = await _userManager.GetLoginsAsync(user),
+                CurrentLogins = currentLogins.ToList(),
                 OtherLogins = otherLogins,
-                ShowRemoveButton = user.PasswordHash != null || CurrentLogins.Count > 1
+                ShowRemoveButton = user.PasswordHash != null || currentLogins.Count > 1
             };
+
             IdentityResult result = await _userManager.AddLoginAsync(user, info);
             if (!result.Succeeded)
             {
@@ -1412,6 +1431,42 @@ namespace IdentitySandboxApp.Controllers
 
             ViewData["Message"] = "Внешний логин был добавлен";
             return View("ExternalLogins", model);
+        }
+
+        #endregion
+
+
+        #region JWT
+
+        public async Task<IActionResult> GenerateJWTToken()
+        {
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            string tokenA = AuthService.GetToken(user);
+            string tokenB = AuthService.GetToken(User);
+
+            var model = new GenerateJWTTokenModel
+            {
+                TokenA = tokenA,
+                TokenB = tokenB,
+                ValidTo = DateTime.Now.AddMinutes(AuthOptions.LIFETIME).ToString("dd.MM.yyyy HH:mm")
+            };
+            return View(model);
+        }
+
+        [Route("/api/test")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + ", Identity.Application")]
+        public IActionResult TestJWT()
+        {
+            return Json(new
+            {
+                name = User.Identity?.Name,
+                isAuthenticated = User.Identity?.IsAuthenticated
+            });
         }
 
         #endregion
