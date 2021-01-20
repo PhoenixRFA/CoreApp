@@ -1,6 +1,7 @@
 using IdentitySandboxApp.Data;
 using IdentitySandboxApp.Infrastructure;
 using IdentitySandboxApp.Models.Identity;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -94,6 +95,15 @@ namespace IdentitySandboxApp
             services.ConfigureApplicationCookie(opts =>
             {
                 opts.Cookie.Name = "IdentityCookie";
+            });
+            
+            services.Configure<AntiforgeryOptions>(opts =>
+            {
+                opts.FormFieldName = "_af";
+                opts.HeaderName = "H_antiforgery";
+                //Если true - в ответ на запрос будет передаваться заголовок X-Frame-Options = SAMEORIGIN
+                bool val = opts.SuppressXFrameOptionsHeader;
+                //opts.Cookie.Name = "COOKIE_af";
             });
         }
 

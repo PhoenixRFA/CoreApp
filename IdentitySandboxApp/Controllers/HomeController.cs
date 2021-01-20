@@ -1,14 +1,11 @@
 ﻿using IdentitySandboxApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace IdentitySandboxApp.Controllers
 {
+    [AutoValidateAntiforgeryToken]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -32,6 +29,12 @@ namespace IdentitySandboxApp.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        
+        public IActionResult AntiforgeryTest()
+        {
+            return Content("ModelState: " + ModelState.IsValid);
         }
     }
 }
