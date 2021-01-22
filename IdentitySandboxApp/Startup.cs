@@ -56,7 +56,7 @@ namespace IdentitySandboxApp
                 .AddJwtBearer(opts =>
                 {
                     //opts.ForwardDefault = "Identity.Application";
-                    //opts.ForwardAuthenticate = "Identity.Application";
+                    opts.ForwardAuthenticate = "Identity.Application";
                     
                     opts.TokenValidationParameters = new TokenValidationParameters
                     {

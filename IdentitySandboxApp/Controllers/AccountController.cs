@@ -1467,7 +1467,7 @@ namespace IdentitySandboxApp.Controllers
 
         [Route("/api/test")]
         //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + ", Identity.Application")]
-        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public IActionResult TestJWT()
         {
             return Json(new
