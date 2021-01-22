@@ -1,5 +1,6 @@
 using IdentitySandboxApp.Data;
 using IdentitySandboxApp.Infrastructure;
+using IdentitySandboxApp.Models;
 using IdentitySandboxApp.Models.Identity;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Data.SqlClient;
 //using Microsoft.OpenApi.Models;
 using Microsoft.IdentityModel.Tokens;
 
@@ -27,14 +29,23 @@ namespace IdentitySandboxApp
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient<IEmailSender, DebugEmailSender>();
+            //services.AddTransient<IEmailSender, DebugEmailSender>();
+            services.AddTransient<IEmailSender, MailKitEmailSender>();
 
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<ApplicationDbContext>(opts =>
+            {
+                //var builder = new SqlConnectionStringBuilder(Configuration.GetConnectionString("DefaultConnection"))
+                //{
+                //    Password = Configuration.GetSection("dbConnection").Value
+                //};
+                //opts.UseSqlServer(builder.ConnectionString);
+                
+                opts.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+                
+            });
             services.AddDatabaseDeveloperPageExceptionFilter();
 
             services.AddIdentity<User, Role>()
-                //.AddJwtBearer()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders()
                 .AddTokenProvider<DigitsTokenProvider>("Digits");
@@ -44,6 +55,9 @@ namespace IdentitySandboxApp
             services.AddAuthentication()
                 .AddJwtBearer(opts =>
                 {
+                    //opts.ForwardDefault = "Identity.Application";
+                    //opts.ForwardAuthenticate = "Identity.Application";
+                    
                     opts.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateAudience = true,
@@ -105,6 +119,8 @@ namespace IdentitySandboxApp
                 bool val = opts.SuppressXFrameOptionsHeader;
                 //opts.Cookie.Name = "COOKIE_af";
             });
+
+            services.Configure<SmtpOptions>(Configuration.GetSection("smtpSettings"));
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
