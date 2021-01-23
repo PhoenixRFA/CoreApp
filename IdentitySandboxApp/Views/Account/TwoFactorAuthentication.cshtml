@@ -3,7 +3,7 @@
     ViewData["Title"] = "Двухфакторная авторизация";
 }
 
-@*<partial name="_StatusMessage" for="StatusMessage" />*@
+<partial name="_AlertPartial" for="@ViewData["Message"]" />
 <h4>@ViewData["Title"]</h4>
 @if (Model.Is2faEnabled)
 {
@@ -32,22 +32,22 @@
     if (Model.IsMachineRemembered)
     {
         <form method="post" style="display: inline-block">
-            <button type="submit" class="btn btn-default">Забыть этот браузер</button>
+            <button type="submit" class="btn btn-danger">Забыть этот браузер</button>
         </form>
     }
-    <a asp-action="Disable2fa" class="btn btn-default">Отключить двухфакторную авторизацию</a>
-    <a asp-action="GenerateRecoveryCodes" class="btn btn-default">Сбросить коды восстановления</a>
+    <a asp-action="Disable2fa" class="btn btn-primary">Отключить двухфакторную авторизацию</a>
+    <a asp-action="GenerateRecoveryCodes" class="btn btn-primary">Сбросить коды восстановления</a>
 }
 
 <h5>Приложения двухфакторной авторизации</h5>
 @if (!Model.HasAuthenticator)
 {
-    <a id="enable-authenticator" asp-action="EnableAuthenticator" class="btn btn-default">Добавить приложение двухфакторной авторизации</a>
+    <a id="enable-authenticator" asp-action="EnableAuthenticator" class="btn btn-primary">Добавить приложение двухфакторной авторизации</a>
 }
 else
 {
-    <a id="enable-authenticator" asp-action="EnableAuthenticator" class="btn btn-default">Настроить приложение двухфакторной авторизации</a>
-    <a id="reset-authenticator" asp-action="ResetAuthenticator" class="btn btn-default">Сбросить приложение двухфакторной авторизации</a>
+    <a id="enable-authenticator" asp-action="EnableAuthenticator" class="btn btn-primary">Настроить приложение двухфакторной авторизации</a>
+    <a id="reset-authenticator" asp-action="ResetAuthenticator" class="btn btn-primary">Сбросить приложение двухфакторной авторизации</a>
 }
 
 @section Scripts {

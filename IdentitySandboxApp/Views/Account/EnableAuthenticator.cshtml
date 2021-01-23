@@ -20,7 +20,7 @@
         </li>
         <li>
             <p>Отсканируйте QR код или введи этот ключ <kbd>@Model.SharedKey</kbd> в приложение двухфакторной авторизации</p>
-            <div class="alert alert-info">Как <a href="https://go.microsoft.com/fwlink/?Linkid=852423">включить генерацию QR кода</a></div>
+            @*<div class="alert alert-info">Как <a href="https://go.microsoft.com/fwlink/?Linkid=852423">включить генерацию QR кода</a></div>*@
             <div id="qrCode"></div>
             <div id="qrCodeData" data-url="@Html.Raw(@Model.AuthenticatorUri)"></div>
         </li>
@@ -34,7 +34,7 @@
                     <form id="send-code" method="post">
                         <div class="form-group">
                             <label class="control-label">Код подтверждения</label>
-                            <input nam="code" class="form-control" autocomplete="off" />
+                            <input name="code" class="form-control" autocomplete="off" />
                             <span asp-validation-for="@Model.Code" class="text-danger"></span>
                         </div>
                         <button type="submit" class="btn btn-primary">Подтвердить</button>
@@ -47,5 +47,18 @@
 </div>
 
 @section Scripts {
-    @*<partial name="_ValidationScriptsPartial" />*@
+    <environment include="Development">
+        <script src="/lib/qrcodejs/qrcode.js"></script>
+    </environment>
+    <environment include="Production">
+        <script src="/lib/qrcodejs/qrcode.min.js"></script>
+    </environment>
+
+    <script>
+        const qrCode = new QRCode('qrCode', {
+            width: 256,
+            height: 256,
+            text: '@Html.Raw(Model.AuthenticatorUri)'
+        });
+    </script>
 }

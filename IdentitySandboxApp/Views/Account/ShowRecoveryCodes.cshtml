@@ -3,7 +3,7 @@
     ViewData["Title"] = "Коды восстановления";
 }
 
-<partial name="_AlertPartial" />
+<partial name="_AlertPartial" for="@ViewData["Message"]" />
 <h4>@ViewData["Title"]</h4>
 <div class="alert alert-warning" role="alert">
     <p>

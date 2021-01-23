@@ -1,5 +1,4 @@
-﻿@using IdentitySandboxApp.Models.Identity
-@model LoginWith2faModel
+﻿@model LoginWith2faModel
 @{
     ViewData["Title"] = "Двухфакторная авторизация";
 }
@@ -20,7 +19,7 @@
             <div class="form-group">
                 <div class="checkbox">
                     <label>
-                        <input name="rememberMachine" value="false" />
+                        <input name="rememberMachine" type="checkbox" value="true" />
                         Запомнить это устройстройство
                     </label>
                 </div>
@@ -32,7 +31,7 @@
     </div>
 </div>
 <p>
-    Нет доступа к устройству для двухфакторной авторизации?
+    Нет доступа к устройству для двухфакторной авторизации?<br/>
     Вы можете <a id="recovery-code-login" asp-action="LoginWithRecoveryCode" asp-route-returnUrl="@Model.ReturnUrl">войти с помощью кода восстановления</a>.
 </p>
 

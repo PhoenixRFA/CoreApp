@@ -16,7 +16,6 @@ using System.Text.Json;
 using System.Text.Encodings.Web;
 using System.Web;
 using IdentitySandboxApp.Infrastructure;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 
@@ -28,13 +27,15 @@ namespace IdentitySandboxApp.Controllers
         private readonly SignInManager<User> _signInManager;
         private readonly ILogger<AccountController> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly IUserStore<User> _store;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, ILogger<AccountController> logger, IEmailSender emailSender)
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, ILogger<AccountController> logger, IEmailSender emailSender, IUserStore<User> store)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _store = store;
         }
 
         [HttpGet]
@@ -275,7 +276,7 @@ namespace IdentitySandboxApp.Controllers
 
             if (res.RequiresTwoFactor)
             {
-                return RedirectToAction("", new { returnUrl = model.ReturnUrl, rememberMe = model.RememberMe });
+                return RedirectToAction("LoginWith2Fa", new { returnUrl = model.ReturnUrl, rememberMe = model.RememberMe });
             }
 
             if (res.IsLockedOut)
@@ -300,7 +301,7 @@ namespace IdentitySandboxApp.Controllers
 
         #endregion
 
-        #region 2FA Login
+        #region 2FA Login +
 
         [HttpGet]
         public async Task<IActionResult> LoginWith2Fa(string returnUrl = null, bool rememberMe = false)
@@ -312,10 +313,13 @@ namespace IdentitySandboxApp.Controllers
                 return RedirectToAction("Login");
             }
 
-            ViewBag.ReturnUrl = returnUrl;
-            ViewBag.RemeberMe = rememberMe;
+            var model = new LoginWith2faModel
+            {
+                ReturnUrl = returnUrl,
+                RememberMe = rememberMe
+            };
 
-            return View();
+            return View(model);
         }
         [HttpPost]
         public async Task<IActionResult> LoginWith2Fa(LoginWith2faModel model)
@@ -329,7 +333,7 @@ namespace IdentitySandboxApp.Controllers
             if (string.IsNullOrWhiteSpace(model.TwoFactorCode))
             {
                 ModelState.AddModelError(nameof(model.TwoFactorCode), "Введите код");
-                return View();
+                return View(model);
             }
 
             SignInResult res = await _signInManager.TwoFactorAuthenticatorSignInAsync(model.TwoFactorCode, model.RememberMe, model.RememberMachine);
@@ -348,7 +352,7 @@ namespace IdentitySandboxApp.Controllers
 
             _logger.LogWarning("{user} entered invalid 2fa code", user.UserName);
             ModelState.AddModelError(string.Empty, "Не верный код авторизации");
-            return View();
+            return View(model);
         }
 
         [HttpGet]
@@ -360,9 +364,12 @@ namespace IdentitySandboxApp.Controllers
                 return RedirectToAction("Login");
             }
 
-            ViewBag.ReturnUrl = returnUrl;
+            var model = new LoginWithRecoveryCodeModel
+            {
+                ReturnUrl = returnUrl
+            };
 
-            return View();
+            return View(model);
         }
         [HttpPost]
         public async Task<IActionResult> LoginWithRecoveryCode(LoginWithRecoveryCodeModel model)
@@ -1069,7 +1076,7 @@ namespace IdentitySandboxApp.Controllers
 
         #endregion
 
-        #region 2FA Management
+        #region 2FA Management +
 
         [HttpGet]
         public async Task<IActionResult> EnableAuthenticator()
@@ -1080,7 +1087,7 @@ namespace IdentitySandboxApp.Controllers
                 return NotFound("Unable to load user");
             }
 
-            EnableAuthenticatorModel model = await LoadSharedKeyAndQrCodeUriAsync(user);
+            EnableAuthenticatorModel model = await _loadSharedKeyAndQrCodeUriAsync(user);
 
             return View(model);
         }
@@ -1095,43 +1102,44 @@ namespace IdentitySandboxApp.Controllers
 
             if (!ModelState.IsValid)
             {
-                model = await LoadSharedKeyAndQrCodeUriAsync(user);
+                model = await _loadSharedKeyAndQrCodeUriAsync(user);
 
                 return View(model);
             }
 
             // Strip spaces and hypens
-            var verificationCode = model.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
+            string verificationCode = model.Code.Replace(" ", string.Empty)
+                                                .Replace("-", string.Empty);
 
-            var is2faTokenValid = await _userManager.VerifyTwoFactorTokenAsync(
-                user, _userManager.Options.Tokens.AuthenticatorTokenProvider, verificationCode);
+            string tokenProvider = _userManager.Options.Tokens.AuthenticatorTokenProvider;
+            bool is2FaTokenValid = await _userManager.VerifyTwoFactorTokenAsync(user, tokenProvider, verificationCode);
 
-            if (!is2faTokenValid)
+            if (!is2FaTokenValid)
             {
                 ModelState.AddModelError(nameof(model.Code), "Не правильный код");
-                model = await LoadSharedKeyAndQrCodeUriAsync(user);
+                model = await _loadSharedKeyAndQrCodeUriAsync(user);
 
                 return View(model);
             }
 
             await _userManager.SetTwoFactorEnabledAsync(user, true);
-            var userId = await _userManager.GetUserIdAsync(user);
-            _logger.LogInformation("User with ID '{UserId}' has enabled 2FA with an authenticator app.", userId);
+            
+            _logger.LogInformation("User '{user}' has enabled 2FA with an authenticator app.", user.UserName);
 
             ViewData["Message"] = "Приложение аутентификации подтверждено";
 
-            if (await _userManager.CountRecoveryCodesAsync(user) == 0)
+            if (await _userManager.CountRecoveryCodesAsync(user) > 0)
             {
-                var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
-                
-                var recoveryCodesModel = new RecoveryCodesModel {
-                    RecoveryCodes = recoveryCodes.ToArray()
-                };
-
-                return RedirectToPage("ShowRecoveryCodes", recoveryCodesModel);
+                return RedirectToAction("TwoFactorAuthentication");
             }
 
-            return RedirectToAction("TwoFactorAuthentication");
+            IEnumerable<string> recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
+                
+            var recoveryCodesModel = new RecoveryCodesModel {
+                RecoveryCodes = recoveryCodes.ToArray()
+            };
+
+            return View("ShowRecoveryCodes", recoveryCodesModel);
         }
 
 
@@ -1280,17 +1288,17 @@ namespace IdentitySandboxApp.Controllers
                 _logger.LogWarning("Error on {user} user disabling 2fa.\r\nErrors: {errors}", user.UserName, errors);
             }
 
-            _logger.LogInformation("User {user} has disabled 2fa", _userManager.GetUserId(User));
+            _logger.LogInformation("User {user} has disabled 2fa", user.UserName);
 
             ViewBag.Message = "Двухфакторная авторизация была отключена";
-            return RedirectToPage("TwoFactorAuthentication");
+            return RedirectToAction("TwoFactorAuthentication");
         }
 
 
-        private async Task<EnableAuthenticatorModel> LoadSharedKeyAndQrCodeUriAsync(User user)
+        //Load the authenticator key & QR code URI to display on the form
+        private async Task<EnableAuthenticatorModel> _loadSharedKeyAndQrCodeUriAsync(User user)
         {
-            // Load the authenticator key & QR code URI to display on the form
-            var unformattedKey = await _userManager.GetAuthenticatorKeyAsync(user);
+            string unformattedKey = await _userManager.GetAuthenticatorKeyAsync(user);
             if (string.IsNullOrEmpty(unformattedKey))
             {
                 await _userManager.ResetAuthenticatorKeyAsync(user);
@@ -1299,12 +1307,12 @@ namespace IdentitySandboxApp.Controllers
 
             var model = new EnableAuthenticatorModel {
                 AuthenticatorUri = GenerateQrCodeUri(user.Email, unformattedKey),
-                SharedKey = FormatKey(unformattedKey)
+                SharedKey = _formatKey(unformattedKey)
             };
 
             return model;
         }
-        private string FormatKey(string unformattedKey)
+        private string _formatKey(string unformattedKey)
         {
             var result = new StringBuilder();
             int currentPosition = 0;
@@ -1322,7 +1330,8 @@ namespace IdentitySandboxApp.Controllers
         }
 
         private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
-        private string GenerateQrCodeUri(string email, string unformattedKey) => string.Format(AuthenticatorUriFormat, HttpUtility.UrlEncode(nameof(IdentitySandboxApp)), HttpUtility.UrlEncode(email), unformattedKey);
+        private string GenerateQrCodeUri(string email, string unformattedKey) =>
+            string.Format(AuthenticatorUriFormat, HttpUtility.UrlEncode(nameof(IdentitySandboxApp)), HttpUtility.UrlEncode(email), unformattedKey);
 
         #endregion
 
