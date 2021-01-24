@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Data.SqlClient;
 //using Microsoft.OpenApi.Models;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IdentitySandboxApp
 {
@@ -79,6 +80,8 @@ namespace IdentitySandboxApp
                     opts.ClientId = credentials["ClientId"];
                     opts.ClientSecret = credentials["ClientSecret"];
                 });
+
+            services.AddScoped<IAuthorizationHandler, UserManagerAuthorizationHandler>();
 
             services.Configure<IdentityOptions>(opts =>
             {

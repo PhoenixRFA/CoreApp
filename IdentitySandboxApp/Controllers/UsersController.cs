@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using IdentitySandboxApp.Models.Identity;
 using IdentitySandboxApp.Models.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,10 +12,12 @@ namespace IdentitySandboxApp.Controllers
     public class UsersController : Controller
     {
         private readonly UserManager<User> _userManager;
+        private readonly IAuthorizationService _authService;
 
-        public UsersController(UserManager<User> userManager)
+        public UsersController(UserManager<User> userManager, IAuthorizationService authService)
         {
             _userManager = userManager;
+            _authService = authService;
         }
 
         public IActionResult Index()
@@ -42,6 +45,27 @@ namespace IdentitySandboxApp.Controllers
             ViewData["Title"] = $"Пользователь - {user.UserName}";
 
             return View(model);
+        }
+
+        public async Task<IActionResult> CreateUser(CreateUserModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> EditUser(long id)
+        {
+            var model = new EditUserModel { };
+            return View(model);
+        }
+
+        public async Task<IActionResult> DeleteUser(long id)
+        {
+            return RedirectToAction("Index");
         }
     }
 }
