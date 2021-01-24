@@ -1,0 +1,48 @@
+﻿@using IdentitySandboxApp.Models.Identity
+@model UserDetailsModel
+@{
+    User user = Model.User;
+}
+<h4>@ViewData["Title"]</h4>
+<div class="row">
+    <div class="col-sm-6">
+        <dl>
+            <dt>Имя пользователя</dt>
+            <dd>@user.UserName</dd>
+        </dl>
+    </div>
+    <div class="col-sm-6">
+        <dl>
+            <dt>Email</dt>
+            <dd title="Email @(user.EmailConfirmed ? string.Empty : "НЕ") подтвержден">@user.Email <span>@(user.EmailConfirmed ? "✔" : "❌")</span></dd>
+        </dl>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-6">
+        <dl>
+            <dt>Дата рождения</dt>
+            <dd>@user.DateOfBirth.ToString("D")</dd>
+        </dl>
+    </div>
+    <div class="col-sm-6">
+        <dl>
+            <dt>Зарегистрирован</dt>
+            <dd>@user.DateOfRegistration</dd>
+        </dl>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-6">
+        <dl>
+            <dt>Телефон</dt>
+            <dd title="Телефон @(user.PhoneNumberConfirmed ? string.Empty : "НЕ") подтвержден">@user.PhoneNumber <span>@(user.PhoneNumberConfirmed ? "✔" : "❌")</span></dd>
+        </dl>
+    </div>
+    <div class="col-sm-6">
+        <dl>
+            <dt>Роли пользователя</dt>
+            <dd>@Model.UserRoles</dd>
+        </dl>
+    </div>
+</div>
