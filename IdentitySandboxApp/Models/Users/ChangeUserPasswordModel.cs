@@ -8,5 +8,7 @@ namespace IdentitySandboxApp.Models.Users
         public string Password { get; set; }
         [Required(ErrorMessage = "Введите подтверждение пароля"), Compare("Password", ErrorMessage = "Пароли не совпадают")]
         public string ConfirmPassword { get; set; }
+
+        public long UserId { get; set; }
     }
 }

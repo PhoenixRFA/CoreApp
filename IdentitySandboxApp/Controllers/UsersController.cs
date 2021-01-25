@@ -37,6 +37,11 @@ namespace IdentitySandboxApp.Controllers
         public async Task<IActionResult> UserDetails(long id)
         {
             User user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null)
+            {
+                return UserNotFound();
+            }
+
             IList<string> roles = await _userManager.GetRolesAsync(user);
 
             string userRoles = roles.Any() ? string.Join(", ", roles) : "—";
@@ -109,7 +114,7 @@ namespace IdentitySandboxApp.Controllers
             User user = await _userManager.FindByIdAsync(id.ToString());
             if (user == null)
             {
-                return RedirectToAction("Index", new {msg = "Пользователь не найден"});
+                return UserNotFound();
             }
 
             var model = new EditUserModel
@@ -177,7 +182,7 @@ namespace IdentitySandboxApp.Controllers
             User user = await _userManager.FindByIdAsync(id.ToString());
             if (user == null)
             {
-                return RedirectToAction("Index", new {msg = "Пользователь не найден"});
+                return UserNotFound();
             }
             
             ViewData["Title"] = $"Удалить пользователя - {user.UserName}";
@@ -196,5 +201,35 @@ namespace IdentitySandboxApp.Controllers
 
             return RedirectToAction("Index", new {msg = $"Пользователь - {user.UserName} удален"});
         }
+
+        [HttpGet]
+        public IActionResult ChangeUserPassword(long id)
+        {
+            var model = new ChangeUserPasswordModel{ UserId = id };
+
+            return View(model);
+        }
+        [HttpPost]
+        public async Task<IActionResult> ChangeUserPassword(ChangeUserPasswordModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            User user = await _userManager.FindByIdAsync(model.UserId.ToString());
+            if (user == null)
+            {
+                return UserNotFound();
+            }
+
+            await _userManager.RemovePasswordAsync(user);
+            await _userManager.AddPasswordAsync(user, model.Password);
+
+            return RedirectToAction("Index", new {msg = "Пароль изменен"});
+        }
+
+        private IActionResult UserNotFound() => 
+            RedirectToAction("Index", new {msg = "Пользователь не найден"});
     }
 }
