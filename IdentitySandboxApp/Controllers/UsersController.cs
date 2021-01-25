@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IdentitySandboxApp.Models.Identity;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace IdentitySandboxApp.Controllers
 {
+    [Authorize(Roles = "admin")]
     public class UsersController : Controller
     {
         private readonly UserManager<User> _userManager;
@@ -20,12 +22,14 @@ namespace IdentitySandboxApp.Controllers
             _authService = authService;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(string msg = null)
         {
             var model = new UsersIndexModel
             {
                 Users = _userManager.Users.ToList()
             };
+
+            ViewData["Message"] = msg;
 
             return View(model);
         }
@@ -47,6 +51,9 @@ namespace IdentitySandboxApp.Controllers
             return View(model);
         }
 
+        [HttpGet]
+        public IActionResult CreateUser() => View();
+        [HttpPost]
         public async Task<IActionResult> CreateUser(CreateUserModel model)
         {
             if (!ModelState.IsValid)
@@ -54,18 +61,140 @@ namespace IdentitySandboxApp.Controllers
                 return View(model);
             }
 
-            return RedirectToAction("Index");
+            if (await _userManager.FindByNameAsync(model.Username) != null)
+            {
+                ModelState.AddModelError(nameof(model.Username), "Данный логин уже занят");
+                return View(model);
+            }
+
+            if (await _userManager.FindByEmailAsync(model.Email) != null)
+            {
+                ModelState.AddModelError(nameof(model.Email), "Данный Email уже занят");
+                return View(model);
+            }
+
+            if (!DateTime.TryParse(model.DateOfBirth, out DateTime parcedDate))
+            {
+                ModelState.AddModelError(nameof(model.DateOfBirth), "Не верный формат даты");
+                return View(model);
+            }
+
+            var newUser = new User
+            {
+                UserName = model.Username,
+                DateOfBirth = parcedDate,
+                DateOfRegistration = DateTime.Now,
+                Email = model.Email,
+                PhoneNumber = model.Phone
+            };
+
+            IdentityResult res = await _userManager.CreateAsync(newUser, model.Password);
+
+            if (!res.Succeeded)
+            {
+                foreach (IdentityError error in res.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+
+                return View(model);
+            }
+
+            return RedirectToAction("Index", new {msg = "Новый пользователь создан"});
         }
 
+        [HttpGet]
         public async Task<IActionResult> EditUser(long id)
         {
-            var model = new EditUserModel { };
+            User user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null)
+            {
+                return RedirectToAction("Index", new {msg = "Пользователь не найден"});
+            }
+
+            var model = new EditUserModel
+            {
+                Id = user.Id,
+                Email = user.Email,
+                DateOfBirth = user.DateOfBirth.ToString("yyyy-MM-dd"),
+                Phone = user.PhoneNumber,
+                Username = user.UserName,
+                CanDelete = true
+            };
+
+            ViewData["Title"] = $"Изменение пользователя - {user.UserName}";
             return View(model);
         }
+        [HttpPost]
+        public async Task<IActionResult> EditUser(EditUserModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
 
+            if (!DateTime.TryParse(model.DateOfBirth, out DateTime parcedDate))
+            {
+                ModelState.AddModelError(nameof(model.DateOfBirth), "Не верный формат даты");
+                return View(model);
+            }
+
+            User user = await _userManager.FindByIdAsync(model.Id.ToString());
+            if (user == null)
+            {
+                return RedirectToAction("Index", new {msg = "Пользователь не найден"});
+            }
+
+            if (user.Email != model.Email && await _userManager.FindByEmailAsync(model.Email) != null)
+            {
+                ModelState.AddModelError(nameof(model.Email), "Данный Email уже занят");
+                return View(model);
+            }
+
+            user.Email = model.Email;
+            user.DateOfBirth = parcedDate;
+            user.UserName = model.Username;
+            user.PhoneNumber = model.Phone;
+
+            IdentityResult res = await _userManager.UpdateAsync(user);
+
+            if (!res.Succeeded)
+            {
+                foreach (IdentityError error in res.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+
+                return View(model);
+            }
+
+            return RedirectToAction("Index", new {msg = "Изменения сохранены"});
+        }
+
+        [HttpGet]
         public async Task<IActionResult> DeleteUser(long id)
         {
-            return RedirectToAction("Index");
+            User user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null)
+            {
+                return RedirectToAction("Index", new {msg = "Пользователь не найден"});
+            }
+            
+            ViewData["Title"] = $"Удалить пользователя - {user.UserName}";
+            return View(id);
+        }
+        [HttpPost, ValidateAntiForgeryToken, ActionName("DeleteUser")]
+        public async Task<IActionResult> DoDeleteUser(long id)
+        {
+            User user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null)
+            {
+                return RedirectToAction("Index", new {msg = "Пользователь не найден"});
+            }
+
+            await _userManager.DeleteAsync(user);
+
+            return RedirectToAction("Index", new {msg = $"Пользователь - {user.UserName} удален"});
         }
     }
 }

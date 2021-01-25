@@ -29,23 +29,23 @@ namespace IdentitySandboxApp
 
         private static async Task InitData(IServiceProvider services)
         {
-            var roleManager = services.GetRequiredService<RoleManager<IdentityRole<long>>>();
+            var roleManager = services.GetRequiredService<RoleManager<Role>>();
 
             if (!await roleManager.RoleExistsAsync("admin"))
             {
-                var role = new IdentityRole<long>("admin");
+                var role = new Role("admin");
                 await roleManager.CreateAsync(role);
             }
 
             if (!await roleManager.RoleExistsAsync("user"))
             {
-                var role = new IdentityRole<long>("user");
+                var role = new Role("user");
                 await roleManager.CreateAsync(role);
             }
 
             var userManager = services.GetRequiredService<UserManager<User>>();
 
-            var admin = await userManager.FindByNameAsync("admin");
+            User admin = await userManager.FindByNameAsync("admin");
             if (admin == null)
             {
                 var user = new User {
@@ -59,7 +59,12 @@ namespace IdentitySandboxApp
                 await userManager.CreateAsync(user, "qwerty");
             }
 
-            var someUser = await userManager.FindByNameAsync("someUser");
+            if (!await userManager.IsInRoleAsync(admin, "admin"))
+            {
+                await userManager.AddToRoleAsync(admin, "admin");
+            }
+
+            User someUser = await userManager.FindByNameAsync("someUser");
             if (someUser == null)
             {
                 var user = new User
@@ -72,6 +77,11 @@ namespace IdentitySandboxApp
                 };
 
                 await userManager.CreateAsync(user, "qwerty");
+            }
+            
+            if (!await userManager.IsInRoleAsync(someUser, "user"))
+            {
+                await userManager.AddToRoleAsync(someUser, "user");
             }
         }
     }

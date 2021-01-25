@@ -1,0 +1,13 @@
+﻿@model long
+<h4>@ViewData["Title"]</h4>
+
+<form method="post" asp-route-id="@Model" asp-antiforgery="true">
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        Вы уверены что хотите удалить пользователя? После удаления его невозможно будет восстановить!
+        <button type="button" class="close" data-dismiss="alert" aria-label="Закрыть">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <button class="btn btn-danger" type="submit">Удалить</button>
+    <a class="btn btn-secondary" asp-action="Index">Отмена</a>
+</form>

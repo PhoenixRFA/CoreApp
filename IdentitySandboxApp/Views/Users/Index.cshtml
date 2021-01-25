@@ -7,6 +7,7 @@
 <partial name="_AlertPartial" for="@ViewData["Message"]"/>
 <div class="row">
     <div class="col-sm-12">
+        <a class="btn btn-primary" asp-action="CreateUser">Создать пользователя</a>
         <table class="table table-hover">
             <tr>
                 <th>#</th>
@@ -19,13 +20,16 @@
             {
                 User user = Model.Users[i];
                 <tr>
-                    <td>@(i+1)</td>
+                    <td>@(i + 1)</td>
                     <td>
                         <a asp-action="UserDetails" asp-route-id="@user.Id">@user.UserName</a>
                     </td>
                     <td title="Email @(user.EmailConfirmed ? string.Empty : "НЕ") подтвержден">@user.Email (<span>@(user.EmailConfirmed ? "✔" : "❌")</span>)</td>
                     <td>@user.PhoneNumber</td>
-                    <td></td>
+                    <td>
+                        <a asp-action="EditUser" asp-route-id="@user.Id" title="Изменить">✏</a>
+                        <a asp-action="DeleteUser" asp-route-id="@user.Id" title="Удалить">🗑</a>
+                    </td>
                 </tr>
             }
         </table>
