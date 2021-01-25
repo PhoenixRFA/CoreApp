@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using IdentitySandboxApp.Models.Identity;
 using IdentitySandboxApp.Models.Users;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -117,6 +118,8 @@ namespace IdentitySandboxApp.Controllers
                 return UserNotFound();
             }
 
+            AuthorizationResult authResult = await _authService.AuthorizeAsync(User, user, new OperationAuthorizationRequirement { Name = "Delete" });
+            
             var model = new EditUserModel
             {
                 Id = user.Id,
@@ -124,7 +127,7 @@ namespace IdentitySandboxApp.Controllers
                 DateOfBirth = user.DateOfBirth.ToString("yyyy-MM-dd"),
                 Phone = user.PhoneNumber,
                 Username = user.UserName,
-                CanDelete = true
+                CanDelete = authResult.Succeeded
             };
 
             ViewData["Title"] = $"Изменение пользователя - {user.UserName}";
@@ -194,7 +197,13 @@ namespace IdentitySandboxApp.Controllers
             User user = await _userManager.FindByIdAsync(id.ToString());
             if (user == null)
             {
-                return RedirectToAction("Index", new {msg = "Пользователь не найден"});
+                return RedirectToAction("Index", new { msg = "Нельзя удалить admin'а" });
+            }
+
+            var authRes = await _authService.AuthorizeAsync(User, user, new OperationAuthorizationRequirement { Name = "Delete" });
+            if (!authRes.Succeeded)
+            {
+                return UserNotFound();
             }
 
             await _userManager.DeleteAsync(user);
@@ -231,5 +240,7 @@ namespace IdentitySandboxApp.Controllers
 
         private IActionResult UserNotFound() => 
             RedirectToAction("Index", new {msg = "Пользователь не найден"});
+
+        
     }
 }

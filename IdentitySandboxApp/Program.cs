@@ -57,6 +57,7 @@ namespace IdentitySandboxApp
                 };
 
                 await userManager.CreateAsync(user, "qwerty");
+                admin = user;
             }
 
             if (!await userManager.IsInRoleAsync(admin, "admin"))
@@ -77,6 +78,8 @@ namespace IdentitySandboxApp
                 };
 
                 await userManager.CreateAsync(user, "qwerty");
+
+                someUser = user;
             }
             
             if (!await userManager.IsInRoleAsync(someUser, "user"))

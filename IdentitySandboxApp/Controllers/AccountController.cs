@@ -1486,6 +1486,61 @@ namespace IdentitySandboxApp.Controllers
 
         #endregion
 
+        #region Impersonate
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> Impersonate(long id)
+        {
+            await ImpersonateUser(id);
+
+            return LocalRedirect("~/");
+        }
+        
+        public async Task<IActionResult> StopImpersonating()
+        {
+            await StopImpersonation();
+
+            return RedirectToAction("Index", "Users");
+        }
+
+        private async Task ImpersonateUser(long userId)
+        {
+            User currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null || userId == currentUser.Id) return;
+
+            User impersonatedUser = await _userManager.FindByIdAsync(userId.ToString());
+            if (impersonatedUser == null) return;
+
+            ClaimsPrincipal newPrincipal = await _signInManager.CreateUserPrincipalAsync(impersonatedUser);
+
+            var impersonatingClaims = new Claim[2] {
+                new Claim("OriginalUserId", currentUser.Id.ToString()),
+                new Claim("IsImpersonating", true.ToString()),
+            };
+            
+            newPrincipal.Identities.First().AddClaims(impersonatingClaims);
+
+            await _signInManager.SignOutAsync();
+
+            await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, newPrincipal);
+            //await _signInManager.SignInAsync();
+        }
+
+        private async Task StopImpersonation()
+        {
+            if(!User.HasClaim("IsImpersonating", true.ToString())) return;
+
+            string originalUserId = User.FindFirst("OriginalUserId").Value;
+            if (originalUserId == null) return;
+
+            User originalUser = await _userManager.FindByIdAsync(originalUserId);
+            if (originalUser == null) return;
+
+            await _signInManager.SignOutAsync();
+            await _signInManager.SignInAsync(originalUser, false);
+        }
+
+        #endregion
+
         /*Identity error codes:
             DefaultError
             ConcurrencyFailure

@@ -16,6 +16,8 @@ using Microsoft.Data.SqlClient;
 //using Microsoft.OpenApi.Models;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace IdentitySandboxApp
 {
@@ -40,9 +42,9 @@ namespace IdentitySandboxApp
                 //    Password = Configuration.GetSection("dbConnection").Value
                 //};
                 //opts.UseSqlServer(builder.ConnectionString);
-                
+
                 opts.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
-                
+
             });
             services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -50,7 +52,7 @@ namespace IdentitySandboxApp
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders()
                 .AddTokenProvider<DigitsTokenProvider>("Digits");
-                //.AddTokenProvider<DataProtectorTokenProvider<User>>(TokenOptions.DefaultProvider);
+            //.AddTokenProvider<DataProtectorTokenProvider<User>>(TokenOptions.DefaultProvider);
             services.AddControllersWithViews();
 
             services.AddAuthentication()
@@ -58,7 +60,7 @@ namespace IdentitySandboxApp
                 {
                     //opts.ForwardDefault = "Identity.Application";
                     opts.ForwardAuthenticate = "Identity.Application";
-                    
+
                     opts.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateAudience = true,
@@ -68,7 +70,7 @@ namespace IdentitySandboxApp
                         ValidIssuer = AuthOptions.ISSUER,
 
                         ValidateLifetime = true,
-                        
+
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = AuthOptions.GetKey()
                     };
@@ -112,6 +114,22 @@ namespace IdentitySandboxApp
             services.ConfigureApplicationCookie(opts =>
             {
                 opts.Cookie.Name = "IdentityCookie";
+            });
+            
+            //Upadte impersonating cookies on cookie refresh
+            services.Configure<SecurityStampValidatorOptions>(opts => {
+                opts.OnRefreshingPrincipal = context =>
+                {
+                    var originalUserIdClaim = context.CurrentPrincipal.FindFirst("OriginalUserId");
+                    var isImpersonatingClaim = context.CurrentPrincipal.FindFirst("IsImpersonating");
+
+                    if(isImpersonatingClaim?.Value == true.ToString() && originalUserIdClaim?.Value != null)
+                    {
+                        context.NewPrincipal.Identities.First().AddClaims(new[] { originalUserIdClaim, isImpersonatingClaim });
+                    }
+
+                    return Task.CompletedTask;
+                };
             });
             
             services.Configure<AntiforgeryOptions>(opts =>

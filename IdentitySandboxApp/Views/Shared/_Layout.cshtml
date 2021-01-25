@@ -9,6 +9,13 @@
 </head>
 <body>
     <header>
+        @if (User.HasClaim("IsImpersonating", true.ToString()))
+        {
+            <nav class="navbar navbar-dark bg-dark">
+                <span class="text-info">Вы просматриваете сайт как @User.Identity.Name</span>
+                <a asp-action="StopImpersonating" asp-controller="Account" class="btn btn-secondary btn-sm">Выйти</a>
+            </nav>
+        }
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">IdentitySandboxApp</a>
