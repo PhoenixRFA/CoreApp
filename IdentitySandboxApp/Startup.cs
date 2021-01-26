@@ -105,7 +105,7 @@ namespace IdentitySandboxApp
                     builder.WithMethods("post");
                 });
             });
-            
+
             services.AddScoped<IAuthorizationHandler, UserManagerAuthorizationHandler>();
             services.AddScoped<IAuthorizationHandler, TestAuthHandler>();
             services.AddSingleton<IAuthorizationMiddlewareResultHandler, ApiAuthMiddleware>();
