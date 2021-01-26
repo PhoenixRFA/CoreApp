@@ -1,0 +1,18 @@
+{
+  "version": "1.0.0",
+  "name": "coreapp",
+  "private": true,
+  "devDependencies": {},
+  "dependencies": {
+    "bootstrap": "5.0.0-beta1",
+    "jquery": "3.5.1",
+    "gulp": "4.0.2",
+    "cssnano": "4.1.10",
+    "del": "6.0.0",
+    "gulp-newer": "1.4.0",
+    "gulp-plumber": "1.2.1",
+    "gulp-postcss": "9.0.0",
+    "gulp-rename": "2.0.0",
+    "gulp-sass": "4.1.0"
+  }
+}
