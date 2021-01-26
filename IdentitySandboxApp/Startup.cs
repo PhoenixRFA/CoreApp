@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using IdentitySandboxApp.Infrastructure.AuthHandlers;
 using IdentitySandboxApp.Infrastructure.AuthMiddleware;
 using IdentitySandboxApp.Infrastructure.ClaimsFactory;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 
 namespace IdentitySandboxApp
@@ -165,6 +166,13 @@ namespace IdentitySandboxApp
                 opts.IncludeSubDomains = true;
                 opts.MaxAge = TimeSpan.FromDays(365);
             });
+
+            services.Configure<CookiePolicyOptions>(opts =>
+            {
+                opts.CheckConsentNeeded = context => true;
+                opts.MinimumSameSitePolicy = SameSiteMode.None;
+                opts.Secure = CookieSecurePolicy.None;
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -182,6 +190,7 @@ namespace IdentitySandboxApp
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseCookiePolicy();
 
             app.UseRouting();
 
