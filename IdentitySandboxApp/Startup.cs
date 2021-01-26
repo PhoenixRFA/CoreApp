@@ -1,11 +1,16 @@
-using System;
-using IdentitySandboxApp.Data;
+п»їusing IdentitySandboxApp.Data;
 using IdentitySandboxApp.Infrastructure;
+using IdentitySandboxApp.Infrastructure.AuthHandlers;
+using IdentitySandboxApp.Infrastructure.AuthMiddleware;
+using IdentitySandboxApp.Infrastructure.ClaimsFactory;
 using IdentitySandboxApp.Models;
 using IdentitySandboxApp.Models.Identity;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -13,14 +18,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Authorization;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using IdentitySandboxApp.Infrastructure.AuthHandlers;
-using IdentitySandboxApp.Infrastructure.AuthMiddleware;
-using IdentitySandboxApp.Infrastructure.ClaimsFactory;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 
 namespace IdentitySandboxApp
 {
@@ -99,7 +99,7 @@ namespace IdentitySandboxApp
             services.AddScoped<IAuthorizationHandler, UserManagerAuthorizationHandler>();
             services.AddScoped<IAuthorizationHandler, TestAuthHandler>();
             services.AddSingleton<IAuthorizationMiddlewareResultHandler, ApiAuthMiddleware>();
-            
+
             //services.AddDataProtection();
 
             services.Configure<IdentityOptions>(opts =>
@@ -132,15 +132,16 @@ namespace IdentitySandboxApp
             {
                 opts.Cookie.Name = "IdentityCookie";
             });
-            
+
             //Upadte impersonating cookies on cookie refresh
-            services.Configure<SecurityStampValidatorOptions>(opts => {
+            services.Configure<SecurityStampValidatorOptions>(opts =>
+            {
                 opts.OnRefreshingPrincipal = context =>
                 {
                     var originalUserIdClaim = context.CurrentPrincipal.FindFirst("OriginalUserId");
                     var isImpersonatingClaim = context.CurrentPrincipal.FindFirst("IsImpersonating");
 
-                    if(isImpersonatingClaim?.Value == true.ToString() && originalUserIdClaim?.Value != null)
+                    if (isImpersonatingClaim?.Value == true.ToString() && originalUserIdClaim?.Value != null)
                     {
                         context.NewPrincipal.Identities.First().AddClaims(new[] { originalUserIdClaim, isImpersonatingClaim });
                     }
@@ -148,12 +149,12 @@ namespace IdentitySandboxApp
                     return Task.CompletedTask;
                 };
             });
-            
+
             services.Configure<AntiforgeryOptions>(opts =>
             {
                 opts.FormFieldName = "_af";
                 opts.HeaderName = "H_antiforgery";
-                //Если true - в ответ на запрос будет передаваться заголовок X-Frame-Options = SAMEORIGIN
+                //Р•СЃР»Рё true - РІ РѕС‚РІРµС‚ РЅР° Р·Р°РїСЂРѕСЃ Р±СѓРґРµС‚ РїРµСЂРµРґР°РІР°С‚СЊСЃСЏ Р·Р°РіРѕР»РѕРІРѕРє X-Frame-Options = SAMEORIGIN
                 bool val = opts.SuppressXFrameOptionsHeader;
                 //opts.Cookie.Name = "COOKIE_af";
             });
