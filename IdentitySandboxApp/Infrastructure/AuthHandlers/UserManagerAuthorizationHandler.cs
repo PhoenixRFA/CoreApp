@@ -1,13 +1,10 @@
-﻿using IdentitySandboxApp.Models.Identity;
+﻿using System.Threading.Tasks;
+using IdentitySandboxApp.Models.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Identity;
-using System.Security.Claims;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace IdentitySandboxApp.Infrastructure
+namespace IdentitySandboxApp.Infrastructure.AuthHandlers
 {
     public class UserManagerAuthorizationHandler : AuthorizationHandler<OperationAuthorizationRequirement, User>
     {

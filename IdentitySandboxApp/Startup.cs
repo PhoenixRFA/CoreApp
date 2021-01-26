@@ -11,13 +11,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Data.SqlClient;
-//using Microsoft.OpenApi.Models;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
 using System.Linq;
 using System.Threading.Tasks;
+using IdentitySandboxApp.Infrastructure.AuthHandlers;
+using IdentitySandboxApp.Infrastructure.AuthMiddleware;
+using IdentitySandboxApp.Infrastructure.ClaimsFactory;
 
 namespace IdentitySandboxApp
 {
@@ -51,6 +51,7 @@ namespace IdentitySandboxApp
             services.AddIdentity<User, Role>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders()
+                .AddClaimsPrincipalFactory<TestClaimsFactory>()
                 .AddTokenProvider<DigitsTokenProvider>("Digits");
             //.AddTokenProvider<DataProtectorTokenProvider<User>>(TokenOptions.DefaultProvider);
             services.AddControllersWithViews();
@@ -83,7 +84,18 @@ namespace IdentitySandboxApp
                     opts.ClientSecret = credentials["ClientSecret"];
                 });
 
+            services.AddAuthorization(opts =>
+            {
+                opts.AddPolicy("IsAdmin", policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireUserName("admin");
+                });
+            });
+
             services.AddScoped<IAuthorizationHandler, UserManagerAuthorizationHandler>();
+            services.AddScoped<IAuthorizationHandler, TestAuthHandler>();
+            services.AddSingleton<IAuthorizationMiddlewareResultHandler, ApiAuthMiddleware>();
 
             services.Configure<IdentityOptions>(opts =>
             {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using IdentitySandboxApp.Infrastructure.AuthAdmin;
 using IdentitySandboxApp.Models.Identity;
 using IdentitySandboxApp.Models.Users;
 using Microsoft.AspNetCore.Authorization;
@@ -11,7 +12,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace IdentitySandboxApp.Controllers
 {
-    [Authorize(Roles = "admin")]
+    //[Authorize(Roles = "admin")]
+    //[AuthAdmin]
+    [Authorize("IsAdmin")]
     public class UsersController : Controller
     {
         private readonly UserManager<User> _userManager;
@@ -29,7 +32,7 @@ namespace IdentitySandboxApp.Controllers
             {
                 Users = _userManager.Users.ToList()
             };
-
+            
             ViewData["Message"] = msg;
 
             return View(model);

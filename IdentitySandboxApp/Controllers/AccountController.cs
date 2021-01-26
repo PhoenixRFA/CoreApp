@@ -16,6 +16,7 @@ using System.Text.Json;
 using System.Text.Encodings.Web;
 using System.Web;
 using IdentitySandboxApp.Infrastructure;
+using IdentitySandboxApp.Infrastructure.AuthAdmin;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 
@@ -1486,8 +1487,9 @@ namespace IdentitySandboxApp.Controllers
 
         #endregion
 
-        #region Impersonate
-        [Authorize(Roles = "admin")]
+        #region Impersonate +
+        
+        [AuthAdmin]
         public async Task<IActionResult> Impersonate(long id)
         {
             await ImpersonateUser(id);
@@ -1502,6 +1504,7 @@ namespace IdentitySandboxApp.Controllers
             return RedirectToAction("Index", "Users");
         }
 
+        //TODO Use policy to check claims
         private async Task ImpersonateUser(long userId)
         {
             User currentUser = await _userManager.GetUserAsync(User);
@@ -1512,7 +1515,7 @@ namespace IdentitySandboxApp.Controllers
 
             ClaimsPrincipal newPrincipal = await _signInManager.CreateUserPrincipalAsync(impersonatedUser);
 
-            var impersonatingClaims = new Claim[2] {
+            var impersonatingClaims = new[] {
                 new Claim("OriginalUserId", currentUser.Id.ToString()),
                 new Claim("IsImpersonating", true.ToString()),
             };
@@ -1529,7 +1532,7 @@ namespace IdentitySandboxApp.Controllers
         {
             if(!User.HasClaim("IsImpersonating", true.ToString())) return;
 
-            string originalUserId = User.FindFirst("OriginalUserId").Value;
+            string originalUserId = User.FindFirst("OriginalUserId")?.Value;
             if (originalUserId == null) return;
 
             User originalUser = await _userManager.FindByIdAsync(originalUserId);
