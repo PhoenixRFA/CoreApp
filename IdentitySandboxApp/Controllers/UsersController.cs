@@ -1,17 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using IdentitySandboxApp.Models.Identity;
+﻿using IdentitySandboxApp.Models.Identity;
 using IdentitySandboxApp.Models.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace IdentitySandboxApp.Controllers
 {
-    [Authorize(Roles = "admin")]
+    //[Authorize(Roles = "admin")]
+    //[AuthAdmin]
+    [Authorize("IsAdmin")]
     public class UsersController : Controller
     {
         private readonly UserManager<User> _userManager;
@@ -106,7 +108,7 @@ namespace IdentitySandboxApp.Controllers
                 return View(model);
             }
 
-            return RedirectToAction("Index", new {msg = "Новый пользователь создан"});
+            return RedirectToAction("Index", new { msg = "Новый пользователь создан" });
         }
 
         [HttpGet]
@@ -119,7 +121,7 @@ namespace IdentitySandboxApp.Controllers
             }
 
             AuthorizationResult authResult = await _authService.AuthorizeAsync(User, user, new OperationAuthorizationRequirement { Name = "Delete" });
-            
+
             var model = new EditUserModel
             {
                 Id = user.Id,
@@ -150,7 +152,7 @@ namespace IdentitySandboxApp.Controllers
             User user = await _userManager.FindByIdAsync(model.Id.ToString());
             if (user == null)
             {
-                return RedirectToAction("Index", new {msg = "Пользователь не найден"});
+                return RedirectToAction("Index", new { msg = "Пользователь не найден" });
             }
 
             if (user.Email != model.Email && await _userManager.FindByEmailAsync(model.Email) != null)
@@ -176,7 +178,7 @@ namespace IdentitySandboxApp.Controllers
                 return View(model);
             }
 
-            return RedirectToAction("Index", new {msg = "Изменения сохранены"});
+            return RedirectToAction("Index", new { msg = "Изменения сохранены" });
         }
 
         [HttpGet]
@@ -187,7 +189,7 @@ namespace IdentitySandboxApp.Controllers
             {
                 return UserNotFound();
             }
-            
+
             ViewData["Title"] = $"Удалить пользователя - {user.UserName}";
             return View(id);
         }
@@ -208,13 +210,13 @@ namespace IdentitySandboxApp.Controllers
 
             await _userManager.DeleteAsync(user);
 
-            return RedirectToAction("Index", new {msg = $"Пользователь - {user.UserName} удален"});
+            return RedirectToAction("Index", new { msg = $"Пользователь - {user.UserName} удален" });
         }
 
         [HttpGet]
         public IActionResult ChangeUserPassword(long id)
         {
-            var model = new ChangeUserPasswordModel{ UserId = id };
+            var model = new ChangeUserPasswordModel { UserId = id };
 
             return View(model);
         }
@@ -235,12 +237,12 @@ namespace IdentitySandboxApp.Controllers
             await _userManager.RemovePasswordAsync(user);
             await _userManager.AddPasswordAsync(user, model.Password);
 
-            return RedirectToAction("Index", new {msg = "Пароль изменен"});
+            return RedirectToAction("Index", new { msg = "Пароль изменен" });
         }
 
-        private IActionResult UserNotFound() => 
-            RedirectToAction("Index", new {msg = "Пользователь не найден"});
+        private IActionResult UserNotFound() =>
+            RedirectToAction("Index", new { msg = "Пользователь не найден" });
 
-        
+
     }
 }
