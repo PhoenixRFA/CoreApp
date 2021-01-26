@@ -1,5 +1,9 @@
-﻿https://github.com/NLog/NLog/wiki/Getting-started-with-ASP.NET-Core-3
+﻿##Описание
+Применение поставщика логирования - NLog
 
+[Wiki](https://github.com/NLog/NLog/wiki/Getting-started-with-ASP.NET-Core-3)
+
+##Установка
 1. Install Nuget package: NLog.Web.AspNetCore 4.9+
 2. Create nlog.config file
 3. Set in config properties "Copy to bin folder" to "Copy if newer"
