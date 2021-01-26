@@ -1,3 +1,4 @@
+using System;
 using IdentitySandboxApp.Data;
 using IdentitySandboxApp.Infrastructure;
 using IdentitySandboxApp.Models;
@@ -18,6 +19,7 @@ using System.Threading.Tasks;
 using IdentitySandboxApp.Infrastructure.AuthHandlers;
 using IdentitySandboxApp.Infrastructure.AuthMiddleware;
 using IdentitySandboxApp.Infrastructure.ClaimsFactory;
+using Microsoft.AspNetCore.HttpsPolicy;
 
 namespace IdentitySandboxApp
 {
@@ -96,7 +98,7 @@ namespace IdentitySandboxApp
             services.AddScoped<IAuthorizationHandler, UserManagerAuthorizationHandler>();
             services.AddScoped<IAuthorizationHandler, TestAuthHandler>();
             services.AddSingleton<IAuthorizationMiddlewareResultHandler, ApiAuthMiddleware>();
-
+            
             //services.AddDataProtection();
 
             services.Configure<IdentityOptions>(opts =>
@@ -156,6 +158,13 @@ namespace IdentitySandboxApp
             });
 
             services.Configure<SmtpOptions>(Configuration.GetSection("smtpSettings"));
+
+            services.Configure<HstsOptions>(opts =>
+            {
+                opts.Preload = true;
+                opts.IncludeSubDomains = true;
+                opts.MaxAge = TimeSpan.FromDays(365);
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
