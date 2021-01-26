@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Cors;
 
 namespace IdentitySandboxApp.Controllers
 {
@@ -35,6 +36,12 @@ namespace IdentitySandboxApp.Controllers
         public IActionResult AntiforgeryTest()
         {
             return Content("ModelState: " + ModelState.IsValid);
+        }
+
+        [EnableCors("cors_test")]
+        public IActionResult CorsTest()
+        {
+            return Content("Ok");
         }
     }
 }

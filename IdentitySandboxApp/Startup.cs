@@ -96,6 +96,16 @@ namespace IdentitySandboxApp
                 });
             });
 
+            services.AddCors(opts =>
+            {
+                opts.AddPolicy("cors_test", builder =>
+                {
+                    builder.WithOrigins("http://localhost:54910");
+                    builder.AllowAnyHeader();
+                    builder.WithMethods("post");
+                });
+            });
+            
             services.AddScoped<IAuthorizationHandler, UserManagerAuthorizationHandler>();
             services.AddScoped<IAuthorizationHandler, TestAuthHandler>();
             services.AddSingleton<IAuthorizationMiddlewareResultHandler, ApiAuthMiddleware>();
@@ -194,6 +204,8 @@ namespace IdentitySandboxApp
             app.UseCookiePolicy();
 
             app.UseRouting();
+
+            app.UseCors();
 
             app.UseAuthentication();
             app.UseAuthorization();
