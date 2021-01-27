@@ -1,0 +1,1 @@
+{"version":3,"sources":["style.scss"],"names":[],"mappings":"AAAA,sBAGY,UAAA","file":"../style.css","sourcesContent":["body {\r\n    .someWrap {\r\n        .input {\r\n            font-size: 24px;\r\n        }\r\n    }\r\n}\r\n"]}

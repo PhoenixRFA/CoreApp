@@ -1,0 +1,27 @@
+$font-stack: helvetica, sans-serif;
+$primary-color: #333333;
+
+.body {
+    font: 100% $font-stack;
+    color: $primary-color;
+}
+
+@mixin transform($property) {
+    transform: $property;
+}
+
+.box {
+
+    @include transform(rotate(30deg));
+}
+
+%message-shared {
+    border: 1px solid #cccccc;
+    padding: 10px;
+    color: #333333;
+}
+
+.message {
+
+    @extend %message-shared;
+}
