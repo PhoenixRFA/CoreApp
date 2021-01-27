@@ -1,14 +1,23 @@
 ﻿'use strict';
 
 const gulp = require('gulp'),
+    //https://github.com/floatdrop/gulp-plumber
     plumber = require('gulp-plumber'),
+    //https://github.com/dlmanning/gulp-sass#readme
     sass = require('gulp-sass'),
+    //https://github.com/scniro/gulp-clean-css#readme
     cleanCss = require('gulp-clean-css'),
+    //https://github.com/gulp-sourcemaps/gulp-sourcemaps
     sourcemaps = require('gulp-sourcemaps'),
+    //https://github.com/kevva/gulp-shorthand
     shorthand = require('gulp-shorthand'),
+    //https://github.com/sindresorhus/gulp-autoprefixer#readme
     autoprefixer = require('gulp-autoprefixer'),
+    //https://github.com/olegskl/gulp-stylelint
     stylelint = require('gulp-stylelint'),
+    //https://github.com/gulp-community/gulp-concat#readme
     concat = require('gulp-concat'),
+    //https://github.com/hparra/gulp-rename
     rename = require('gulp-rename');
 
 const webroot = './wwwroot/';
@@ -34,15 +43,10 @@ function css() {
     .pipe(plumber())
     .pipe(stylelint({
         failAfterError: false,
-        reporters: [
-            {
-                formatter: 'string',
-                console: true
-            }
-        ]
+        reporters: [ { formatter: 'string', console: true } ]
     }))
-    .pipe(sourcemaps.init())
     .pipe(sass({ outputStyle: 'expanded' }))
+    .pipe(sourcemaps.init())
     .pipe(concat('styles.css'))
     .pipe(autoprefixer({ cascade: false }))
     .pipe(shorthand())
@@ -53,6 +57,7 @@ function css() {
         console.log(`${details.name}: Original size:${details.stats.originalSize} - Minified size: ${details.stats.minifiedSize}`);
     }))
     .pipe(sourcemaps.write('/map'))
+    //.pipe(sourcemaps.write())
     .pipe(rename({ suffix: '.min' }))
     .pipe(gulp.dest(paths.concatCssDest));
 }
