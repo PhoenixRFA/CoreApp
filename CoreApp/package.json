@@ -2,12 +2,20 @@
   "version": "1.0.0",
   "name": "coreapp",
   "private": true,
-  "devDependencies": {},
   "scripts": {
     "stylefix": "stylelint ./wwwroot/sass/**/*.scss --fix --syntax scss"
   },
-  "dependencies": {
-    "bootstrap": "5.0.0-beta1",
+  "devDependencies": {
+    "del": "^6.0.0",
+    "eslint": "^7.18.0",
+    "eslint-config-htmlacademy": "^2.0.0",
+    "eslint-config-standart": "^0.2.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^5.0.0",
+    "gulp-eslint": "^6.0.0",
+    "gulp-npm-dist": "^1.0.3",
+    "gulp-terser": "^2.0.1",
     "gulp": "^4.0.2",
     "gulp-autoprefixer": "^7.0.1",
     "gulp-clean-css": "^4.3.0",
@@ -18,11 +26,14 @@
     "gulp-sass": "^4.1.0",
     "gulp-sourcemaps": "^3.0.0",
     "gulp-stylelint": "^13.0.0",
-    "jquery": "3.5.1",
     "stylelint": "^13.0.0",
     "stylelint-config-htmlacademy": "^0.1.4",
     "stylelint-config-standard": "^19.0.0",
     "stylelint-config-standard-scss": "^1.1.0",
     "stylelint-scss": "^3.18.0"
+  },
+  "dependencies": {
+    "bootstrap": "5.0.0-beta1",
+    "jquery": "3.5.1"
   }
 }
