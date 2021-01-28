@@ -131,61 +131,60 @@ namespace CoreApp
         //Выполняется один раз при создании объекта класса Startup
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IMessageSender sender, ServiceUsingExample senderService, ILogger<Startup> loger1, ILoggerFactory loggerFactory)
         {
+            bool useRouteHandler = false;
+
             #region RouterMiddleware - система маршрутищации из пред. версий
             //Пример настройки роутера
-
-            var routeHandler = new RouteHandler(async context =>
+            if (useRouteHandler)
             {
-                //получение данных маршрута
-                RouteData routeData = context.GetRouteData();
-
-                string s = "";
-                foreach(KeyValuePair<string, object> item in routeData.Values)
+                var routeHandler = new RouteHandler(async context =>
                 {
-                    s += $" {item.Key}={item.Value};";
-                }
+                    //получение данных маршрута
+                    RouteData routeData = context.GetRouteData();
 
-                //получение данных маршрута по ключу
-                object id = context.GetRouteValue("id");
+                    string s = "";
+                    foreach (KeyValuePair<string, object> item in routeData.Values)
+                    {
+                        s += $" {item.Key}={item.Value};";
+                    }
 
-                await context.Response.WriteAsync("Router middleware example " + s + $" {(id == null ? string.Empty : id)}");
-            });
+                    //получение данных маршрута по ключу
+                    object id = context.GetRouteValue("id");
 
-            var routeBuilder = new RouteBuilder(app, routeHandler);
+                    await context.Response.WriteAsync("Router middleware example " + s +
+                                                      $" {(id == null ? string.Empty : id)}");
+                });
 
-            //пример использования midleware
-            routeBuilder.MapMiddlewareGet("middleware/{action}", middl =>
-            {
-                middl.Run(async context => await context.Response.WriteAsync("middleware example"));
-            });
-            
-            //пример использования произвольного метода
-            routeBuilder.MapVerb("GET", "test/{action}/{id?}", async (request, response, route) => {
-                await response.WriteAsync("MapVerbExample");
-            });
+                var routeBuilder = new RouteBuilder(app, routeHandler);
 
-            //пример использвания расширения для Post метода
-            routeBuilder.MapPost("test/{action}", async context => {
-                await context.Response.WriteAsync("POST: test/");
-            });
+                //пример использования midleware
+                routeBuilder.MapMiddlewareGet("middleware/{action}",
+                    middl => { middl.Run(async context => await context.Response.WriteAsync("middleware example")); });
 
-            //Пример именованого маршрута (отработает routeHandler)
-            routeBuilder.MapRoute("default", @"{controller:regex(^H.*)=home}/{action:alpha:minlength(3)=index}/{id:regex(\d+)?}");
-            //routeBuilder.MapRoute("default",
-            //    "{controller}/{action}/{id?}",
-            //    new { controller = "home", action = "index" },                                            //пример комбинации ограничений
-            //    new { httpMethod = new HttpMethodRouteConstraint("GET"), controller = "^H.*", id = @"\d+", action = new CompositeRouteConstraint(new IRouteConstraint[]{
-            //        new AlphaRouteConstraint(),
-            //        new MinLengthRouteConstraint(3)
-            //})});
-            //Microsoft.AspNetCore.Routing.Constraints.* - дополнительные ограничния
+                //пример использования произвольного метода
+                routeBuilder.MapVerb("GET", "test/{action}/{id?}",
+                    async (request, response, route) => { await response.WriteAsync("MapVerbExample"); });
 
-            app.UseRouter(routeBuilder.Build());
+                //пример использвания расширения для Post метода
+                routeBuilder.MapPost("test/{action}",
+                    async context => { await context.Response.WriteAsync("POST: test/"); });
 
-            app.Run(async context =>
-            {
-                await context.Response.WriteAsync("Route miss");
-            });
+                //Пример именованого маршрута (отработает routeHandler)
+                routeBuilder.MapRoute("default",
+                    @"{controller:regex(^H.*)=home}/{action:alpha:minlength(3)=index}/{id:regex(\d+)?}");
+                //routeBuilder.MapRoute("default",
+                //    "{controller}/{action}/{id?}",
+                //    new { controller = "home", action = "index" },                                            //пример комбинации ограничений
+                //    new { httpMethod = new HttpMethodRouteConstraint("GET"), controller = "^H.*", id = @"\d+", action = new CompositeRouteConstraint(new IRouteConstraint[]{
+                //        new AlphaRouteConstraint(),
+                //        new MinLengthRouteConstraint(3)
+                //})});
+                //Microsoft.AspNetCore.Routing.Constraints.* - дополнительные ограничния
+
+                app.UseRouter(routeBuilder.Build());
+
+                app.Run(async context => { await context.Response.WriteAsync("Route miss"); });
+            }
 
             #endregion
 
@@ -280,12 +279,12 @@ namespace CoreApp
                     RequestPath = string.Empty
                 },
 
-                EnableDirectoryBrowsing = true,
-                DirectoryBrowserOptions =
-                {
-                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "content")),
-                    RequestPath = "/admin/contentFolder"
-                },
+                //EnableDirectoryBrowsing = true,
+                //DirectoryBrowserOptions =
+                //{
+                //    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "content")),
+                //    RequestPath = "/admin/contentFolder"
+                //},
 
                 EnableDefaultFiles = true,
                 DefaultFilesOptions =
