@@ -11,15 +11,15 @@
       ],
       "rules": {
         "indent": [
-          "error",
+          "warn",
           4
         ],
         "semi": [
-          "error",
-          "never"
+          "warn",
+          "error"
         ],
         "quotes": [
-          "error",
+          "warn",
           "backtick"
         ]
       }
