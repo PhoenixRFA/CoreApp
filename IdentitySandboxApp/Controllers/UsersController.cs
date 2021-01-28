@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 
 namespace IdentitySandboxApp.Controllers
 {
-    //[Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin")]
     //[AuthAdmin]
-    [Authorize("IsAdmin")]
+    //[Authorize("IsAdmin")]
     public class UsersController : Controller
     {
         private readonly UserManager<User> _userManager;

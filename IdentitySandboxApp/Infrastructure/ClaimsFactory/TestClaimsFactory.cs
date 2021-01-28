@@ -6,10 +6,10 @@ using Microsoft.Extensions.Options;
 
 namespace IdentitySandboxApp.Infrastructure.ClaimsFactory
 {
-    public class TestClaimsFactory : UserClaimsPrincipalFactory<User>
+    public class TestClaimsFactory : UserClaimsPrincipalFactory<User, Role>
     {
-        public TestClaimsFactory(UserManager<User> userManager, IOptions<IdentityOptions> optionsAccessor)
-            : base(userManager, optionsAccessor) { }
+        public TestClaimsFactory(UserManager<User> userManager, RoleManager<Role> roleManager, IOptions<IdentityOptions> optionsAccessor)
+            : base(userManager, roleManager, optionsAccessor) { }
 
         protected override async Task<ClaimsIdentity> GenerateClaimsAsync(User user)
         {

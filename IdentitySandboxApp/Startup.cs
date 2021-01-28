@@ -158,6 +158,9 @@ namespace IdentitySandboxApp
 
                     return Task.CompletedTask;
                 };
+                
+                //Как часто проверять штамп безопасности (разлогин при смене пароля)
+                opts.ValidationInterval = TimeSpan.FromMinutes(30);
             });
 
             services.Configure<AntiforgeryOptions>(opts =>
