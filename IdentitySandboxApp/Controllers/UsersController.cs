@@ -17,11 +17,13 @@ namespace IdentitySandboxApp.Controllers
     public class UsersController : Controller
     {
         private readonly UserManager<User> _userManager;
+        private readonly RoleManager<Role> _roleManager;
         private readonly IAuthorizationService _authService;
 
-        public UsersController(UserManager<User> userManager, IAuthorizationService authService)
+        public UsersController(UserManager<User> userManager, RoleManager<Role> roleManager, IAuthorizationService authService)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
             _authService = authService;
         }
 
@@ -121,6 +123,8 @@ namespace IdentitySandboxApp.Controllers
             }
 
             AuthorizationResult authResult = await _authService.AuthorizeAsync(User, user, new OperationAuthorizationRequirement { Name = "Delete" });
+            string[] roles = _roleManager.Roles.Select(x => x.Name).ToArray();
+            string[] userRoles = (await _userManager.GetRolesAsync(user)).ToArray();
 
             var model = new EditUserModel
             {
@@ -129,7 +133,9 @@ namespace IdentitySandboxApp.Controllers
                 DateOfBirth = user.DateOfBirth.ToString("yyyy-MM-dd"),
                 Phone = user.PhoneNumber,
                 Username = user.UserName,
-                CanDelete = authResult.Succeeded
+                CanDelete = authResult.Succeeded,
+                Roles = roles,
+                UserRoles = userRoles
             };
 
             ViewData["Title"] = $"Изменение пользователя - {user.UserName}";
@@ -159,6 +165,20 @@ namespace IdentitySandboxApp.Controllers
             {
                 ModelState.AddModelError(nameof(model.Email), "Данный Email уже занят");
                 return View(model);
+            }
+
+            IList<string> userRoles = await _userManager.GetRolesAsync(user);
+            
+            string[] rolesToRemove = userRoles.Except(model.UserRoles).ToArray();
+            string[] rolesToAdd = model.UserRoles.Except(userRoles).ToArray();
+
+            if (rolesToRemove.Any())
+            {
+                await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
+            }
+            if (rolesToAdd.Any())
+            {
+                await _userManager.AddToRolesAsync(user, rolesToAdd);
             }
 
             user.Email = model.Email;

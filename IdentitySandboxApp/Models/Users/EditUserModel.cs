@@ -15,5 +15,7 @@ namespace IdentitySandboxApp.Models.Users
 
         public long Id { get; set; }
         public bool CanDelete { get; set; }
+        public string[] Roles { get; set; }
+        public string[] UserRoles { get; set; }
     }
 }

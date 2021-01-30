@@ -21,6 +21,8 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using IdentitySandboxApp.Infrastructure.SecurityStampValidator;
+using Microsoft.CodeAnalysis.Options;
 
 namespace IdentitySandboxApp
 {
@@ -109,6 +111,8 @@ namespace IdentitySandboxApp
             services.AddScoped<IAuthorizationHandler, UserManagerAuthorizationHandler>();
             services.AddScoped<IAuthorizationHandler, TestAuthHandler>();
             services.AddSingleton<IAuthorizationMiddlewareResultHandler, ApiAuthMiddleware>();
+            
+            services.AddScoped<ISecurityStampValidator, CustomSecurityStampValidator<User>>();
 
             //services.AddDataProtection();
 
@@ -158,9 +162,9 @@ namespace IdentitySandboxApp
 
                     return Task.CompletedTask;
                 };
-                
+
                 //Как часто проверять штамп безопасности (разлогин при смене пароля)
-                opts.ValidationInterval = TimeSpan.FromMinutes(30);
+                opts.ValidationInterval = TimeSpan.FromSeconds(120);//TimeSpan.FromMinutes(30);
             });
 
             services.Configure<AntiforgeryOptions>(opts =>
