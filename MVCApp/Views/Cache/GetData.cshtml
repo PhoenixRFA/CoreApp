@@ -1,0 +1,24 @@
+﻿@model CacheGetDataModel
+@{
+    ViewData["Title"] = "Caching";
+}
+
+<h1>Get data</h1>
+<a asp-action="Index">< Back</a>
+
+@if (Model.IsFromCache)
+{
+    <p class="text-success">From cache</p>
+}
+
+<div>
+    <p>@Model.User.Id</p>
+    <p>@Model.User.Name</p>
+    <p>@Model.User.Email</p>
+    <p>@Model.User.Age</p>
+    <p>@Model.User.Sex</p>
+    <p><input type="checkbox" @(Model.User.IsMarried ? "checked" : null) disabled /> Is married</p>
+    <p>@Model.User.Company?.Name</p>
+    <p>@Model.User.Role?.Name</p>
+    <p>@Model.User.UserData?.Additional</p>
+</div>

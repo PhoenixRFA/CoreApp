@@ -78,6 +78,7 @@ namespace MVCApp
             services.AddTransient<IDateTimeService, DateTimeService>();
             services.AddScoped<IRequestStoreService, RequestStoreService>();
             services.AddSingleton<IApplicationService, ApplicationService>(provider => new ApplicationService("MVC Test Application"));
+            services.AddScoped<UsersService>();
 
             services.Configure<SomeSettings>(Configuration.GetSection("SomeSettings"));
 

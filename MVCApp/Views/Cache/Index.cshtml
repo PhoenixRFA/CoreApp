@@ -1,0 +1,17 @@
+﻿@model CacheIndexModel
+@{
+    ViewData["Title"] = "Caching";
+}
+
+<h1>Caching</h1>
+<h3>Users</h3>
+<div>
+    @foreach (var user in Model.Users)
+    {
+        <p>@user.Id</p>
+        <p>@user.Name</p>
+        <p>@user.Email</p>
+        <a asp-action="GetData" asp-route-id="@user.Id">More</a>
+        <hr />
+    }
+</div>
