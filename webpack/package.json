@@ -1,0 +1,15 @@
+{
+  "name": "webpackapp",
+  "version": "0.0.1",
+  "description": "test app with webpack",
+  "private": true,
+  "scripts": {
+    "build": "webpack" 
+  },
+  "author": "phoenixrfa",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^5.19.0",
+    "webpack-cli": "^4.4.0"
+  }
+}
