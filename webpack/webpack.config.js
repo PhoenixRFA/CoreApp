@@ -7,6 +7,10 @@ console.log(`Webpack config environment: ${nodeEnvironment}`);
 const isDev = nodeEnvironment === 'development';
 //const isProd = nodeEnvironment === 'production';
 
+if (ISDEV) {
+    console.warn(`${new Date()} App in dev mode!`);
+}
+
 module.exports = {
     context: path.resolve(__dirname, 'src'),
 
@@ -87,8 +91,4 @@ if (!isDev) {
                 }
             }
         });
-}
-
-if (ISDEV) {
-    console.warn(`${new Date()} App in dev mode!`);
 }
