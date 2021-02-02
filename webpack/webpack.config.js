@@ -12,12 +12,19 @@ module.exports = {
 
     entry: {
         index: './index',
-        theaccount: './account'
+        theaccount: './account',
+        common: './common',
+        multipart: ['./multipart1', './multipart2'],
+        custom: { import: './module1', filename: '../dist2/custom.js' },
+        dynamic: './dynamicRequire'
     },
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: '[name].js',
-        library: '[name]'
+        library: '[name]',
+        publicPath: '/dist/',
+        //chunkFilename: file => { console.log(file); return 'id.js';  }//'id.js'
+        chunkFilename: '[hash].js'
     },
 
     devtool: 'source-map',

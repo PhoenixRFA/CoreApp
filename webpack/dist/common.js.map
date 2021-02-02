@@ -1,0 +1,1 @@
+{"version":3,"sources":["webpack://[name]/./common.js"],"names":[],"mappings":";;;;;;;;;AAAA,yC","file":"common.js","sourcesContent":["﻿console.log('Commom code sends hello!');"],"sourceRoot":""}

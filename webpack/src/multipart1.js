@@ -1,0 +1,3 @@
+﻿const foo = {
+    getItem: () => 'foobar'
+};

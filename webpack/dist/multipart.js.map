@@ -1,0 +1,1 @@
+{"version":3,"sources":["webpack://[name]/./multipart1.js","webpack://[name]/./multipart2.js"],"names":[],"mappings":";;;;;;;;;AAAA;AACA;AACA,E;;;;;;;;;;ACFA,qCAAqC,cAAc,G","file":"multipart.js","sourcesContent":["﻿const foo = {\r\n    getItem: () => 'foobar'\r\n};","﻿console.log(`hello from multipart ${foo.getItem()}`);"],"sourceRoot":""}
