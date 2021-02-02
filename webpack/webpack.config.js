@@ -88,3 +88,7 @@ if (!isDev) {
             }
         });
 }
+
+if (ISDEV) {
+    console.warn(`${new Date()} App in dev mode!`);
+}
