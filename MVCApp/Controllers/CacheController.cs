@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -40,7 +41,7 @@ namespace MVCApp.Controllers
                 User = user,
                 IsFromCache = isFromCache
             };
-            
+
             return View(model);
         }
 
@@ -49,6 +50,24 @@ namespace MVCApp.Controllers
             User user = _cache.Set(1, new User());
 
             return Content(user.ToString());
+        }
+
+        [ResponseCache(Duration = 10, Location = ResponseCacheLocation.Client)]
+        public IActionResult GetTime1()
+        {
+            return Content(DateTime.Now.ToString());
+        }
+
+        [ResponseCache(Duration = 10, Location = ResponseCacheLocation.None)]
+        public IActionResult GetTime2()
+        {
+            return Content(DateTime.Now.ToString());
+        }
+
+        [ResponseCache(Duration = 10, Location = ResponseCacheLocation.Any, NoStore = true)]
+        public IActionResult GetTime3()
+        {
+            return Content(DateTime.Now.ToString());
         }
     }
 }

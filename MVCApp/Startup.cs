@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -8,6 +9,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -93,10 +96,21 @@ namespace MVCApp
                 opts.ModelBinderProviders.Insert(0, new CustomDateTimeModelBinderProvider());
 
                 opts.Filters.Add<LastVisitResourceFilter>();
+                //var cacheFilter = new ResponseCacheAttribute { Duration = 30 };
+                //opts.Filters.Add(cacheFilter);
             });//.AddRazorRuntimeCompilation();
 
             services.AddDistributedMemoryCache();
             services.AddSession();
+
+            //services.AddResponseCompression(opts=>
+            //{
+            //    opts.EnableForHttps = true;
+            //});
+            //services.Configure<BrotliCompressionProviderOptions>(options =>
+            //{
+            //    options.Level = CompressionLevel.Optimal;
+            //});
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
@@ -104,6 +118,8 @@ namespace MVCApp
             app.UseMiddleware<PerformanceMiddleware>();
 
             app.UseMiddleware<RequestStoreTestMiddleware>();
+
+            //app.UseResponseCompression();
 
             app.UseSession();
 
