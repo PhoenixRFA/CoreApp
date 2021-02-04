@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -151,7 +153,20 @@ namespace MVCApp
                 //app.UseHsts();
             }
             
-            app.UseHttpsRedirection();
+            var rewriteOptions = new RewriteOptions();
+            ////https://localhost:/homeindex => https://localhost:/index-home
+            //rewriteOptions.AddRedirect("^(home)(index)$","$2-$1");
+            ////better to use app.UseHttpsRedirection()
+            //rewriteOptions.AddRedirectToHttps((int)HttpStatusCode.TemporaryRedirect, 44324);
+            ////Template for redirectiong from www domain
+            //rewriteOptions.AddRedirectToNonWww();
+            ////Template for redirectiong to www domain
+            //rewriteOptions.AddRedirectToWww();
+            rewriteOptions.AddRewrite("(?i)^privacy$", "Home/Privacy", true);
+
+            app.UseRewriter(rewriteOptions);
+
+            //app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
