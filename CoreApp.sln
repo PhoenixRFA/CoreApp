@@ -66,6 +66,8 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "webpack", "webpack\", "{EF8
 		SlnRelativePath = "webpack\"
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVCApp.Tests", "MVCApp.Tests\MVCApp.Tests.csproj", "{879BF283-6FE6-4656-9205-32272B5BB245}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -112,6 +114,10 @@ Global
 		{EF8E3E62-9459-4DDB-BE21-838D000D48E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EF8E3E62-9459-4DDB-BE21-838D000D48E9}.Release|Any CPU.ActiveCfg = Debug|Any CPU
 		{EF8E3E62-9459-4DDB-BE21-838D000D48E9}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{879BF283-6FE6-4656-9205-32272B5BB245}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{879BF283-6FE6-4656-9205-32272B5BB245}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{879BF283-6FE6-4656-9205-32272B5BB245}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{879BF283-6FE6-4656-9205-32272B5BB245}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

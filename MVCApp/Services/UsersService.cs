@@ -5,7 +5,13 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace MVCApp.Services
 {
-    public class UsersService
+    public interface IUsersService
+    {
+        List<User> GetUsers();
+        User GetUser(int id, out bool isFromCache);
+    }
+
+    public class UsersService : IUsersService
     {
         private readonly TestappdbContext _db;
         private readonly IMemoryCache _cache;

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using MVCApp.Models;
@@ -10,10 +9,10 @@ namespace MVCApp.Controllers
 {
     public class CacheController : Controller
     {
-        private readonly UsersService _db;
+        private readonly IUsersService _db;
         private readonly IMemoryCache _cache;
 
-        public CacheController(UsersService db, IMemoryCache cache)
+        public CacheController(IUsersService db, IMemoryCache cache)
         {
             _db = db;
             _cache = cache;
@@ -34,7 +33,17 @@ namespace MVCApp.Controllers
 
         public IActionResult GetData(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest($"{nameof(id)} must be > 0");
+            }
+
             User user = _db.GetUser(id, out bool isFromCache);
+
+            if (user == null)
+            {
+                return NotFound($"user with id: ${id} is not found");
+            }
 
             var model = new CacheGetDataModel
             {
