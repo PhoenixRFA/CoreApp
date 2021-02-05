@@ -1,12 +1,22 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace MVCApp.xUnit.Tests
 {
+    [Collection("Our Test Collection #1")]
     public class UnitTest1
     {
+        private readonly ITestOutputHelper output;
+
+        public UnitTest1(ITestOutputHelper output)
+        {
+            this.output = output;
+        }
+
         #region AsyncExamples
 
         [Fact]
@@ -137,7 +147,7 @@ namespace MVCApp.xUnit.Tests
         [Theory]
         [InlineData(3)]
         [InlineData(5)]
-        [InlineData(6)]
+        [InlineData(7)]
         public void MyFirstTheory(int value)
         {
             Assert.True(IsOdd(value));
@@ -149,6 +159,57 @@ namespace MVCApp.xUnit.Tests
         }
 
         #endregion
+
+        [Fact]
+        public void CustomOutput()
+        {
+            output.WriteLine("This is output from {0}", nameof(CustomOutput));
+        }
+
+        [Fact]
+        public void Asserts()
+        {
+            Assert.NotNull(new object());
+            Assert.Null(null);
+            Assert.Empty(new int[0]);
+
+            var arr = new[] { 1, 2, 3, 4, 5 };
+            var arr2 = new[] { 1, 2, 3, 4, 5 };
+            Assert.Contains(2, arr);
+            Assert.Contains(arr, i => i == 2);
+            var dict = new Dictionary<int, string>
+            {
+                {1, "foo"},
+                {2, "bar"},
+                {3, "foobar"}
+            };
+            Assert.Contains(2, (IDictionary<int, string>)dict);
+            var now = DateTime.Now;
+            Assert.Equal(now, DateTime.Now, TimeSpan.FromSeconds(1));
+            Assert.Equal(arr, arr2);
+            Assert.Equal(3.1415, 3.1416, 2);
+            Assert.Equal("foo", "Foo", true);
+
+            Assert.IsType<DateTime>(now);
+            Assert.StartsWith("foo", "foobar");
+
+            Assert.All(arr, i => { });
+            Assert.Collection(new[] { 1, 2 }, i => { }, j => { });
+            Assert.DoesNotContain(0, arr);
+
+            Assert.EndsWith("bar", "foobar");
+            Assert.False(1 == 0);
+            Assert.IsAssignableFrom<IDictionary>(dict);
+
+            Assert.IsNotType<DateTime>(1);
+            Assert.True(1 == 1);
+            Assert.Throws<NotImplementedException>(() =>
+            {
+                throw new NotImplementedException();
+                return 1;
+            });
+            Assert.Same(arr, arr);
+        }
     }
 
     internal class CollectionEquivalenceComparer<T> : IEqualityComparer<IEnumerable<T>>
@@ -161,19 +222,17 @@ namespace MVCApp.xUnit.Tests
             leftList.Sort();
             rightList.Sort();
 
-            IEnumerator<T> enumeratorX = leftList.GetEnumerator();
-            IEnumerator<T> enumeratorY = rightList.GetEnumerator();
+            using IEnumerator<T> enumeratorX = leftList.GetEnumerator();
+            using IEnumerator<T> enumeratorY = rightList.GetEnumerator();
 
             while (true)
             {
                 bool hasNextX = enumeratorX.MoveNext();
                 bool hasNextY = enumeratorY.MoveNext();
 
-                if (!hasNextX || !hasNextY)
-                    return (hasNextX == hasNextY);
+                if (!hasNextX || !hasNextY) return hasNextX == hasNextY;
 
-                if (!enumeratorX.Current.Equals(enumeratorY.Current))
-                    return false;
+                if (!enumeratorX.Current.Equals(enumeratorY.Current)) return false;
             }
         }
 
