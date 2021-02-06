@@ -3,6 +3,8 @@ using Microsoft.Extensions.Logging;
 using MVCApp.Models;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.SignalR;
+using MVCApp.SignalR;
 
 namespace MVCApp.Controllers
 {
@@ -10,11 +12,13 @@ namespace MVCApp.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly TestappdbContext _db;
+        private readonly IHubContext<ChatHub> _chatHub;
 
-        public HomeController(ILogger<HomeController> logger, TestappdbContext db)
+        public HomeController(ILogger<HomeController> logger, TestappdbContext db, IHubContext<ChatHub> chatHub)
         {
             _logger = logger;
             _db = db;
+            _chatHub = chatHub;
         }
 
         public IActionResult Index()
@@ -31,6 +35,17 @@ namespace MVCApp.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        public IActionResult Signalr()
+        {
+            return View();
+        }
+
+        public IActionResult SignalrTest()
+        {
+            _chatHub.Clients.All.SendAsync("send", "ATTENTION!", "system");
+            return RedirectToAction("Index");
         }
 
         public IActionResult InitDb()

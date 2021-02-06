@@ -1,0 +1,87 @@
+﻿@{
+    ViewData["Title"] = "SignalR";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div id="loginBlock">
+    User:<br />
+    <input id="username" type="text" />
+    <input id="user" type="hidden" />
+    <button id="loginBtn">Login</button>
+</div><br />
+ 
+<div id="header"></div><br />
+
+<div id="inputForm">
+    <input type="text" id="message" />
+    <input type="button" id="sendBtn" value="Отправить" />
+</div>
+<div id="chatroom"></div>
+
+@section Scripts
+{
+    <script src="/js/signalr/signalr.js"></script>
+    <script>
+        const hubConnection = new signalR.HubConnectionBuilder()
+            .configureLogging(signalR.LogLevel.Trace) //None, Critical, Error, Warning, Information, Debug, Trace
+            .withUrl('/chat', { transport: signalR.HttpTransportType.WebSockets })//ServerSentEvents, WebSockets, LongPolling
+            .withAutomaticReconnect([0, 2000, 10000, 30000])//defaults for delays between reconnects
+            .build();
+
+        hubConnection.serverTimeoutInMilliseconds = 120000;
+
+        hubConnection.on('send', function(msg, user) {
+            console.log({ data: { msg, user }, context: this });
+
+            const userNameElem = document.createElement('b');
+            userNameElem.appendChild(document.createTextNode(user + ': '));
+
+            const elem = document.createElement('p');
+            elem.appendChild(userNameElem);
+            elem.appendChild(document.createTextNode(msg));
+
+            const firstElem = document.getElementById('chatroom').firstChild;
+            document.getElementById('chatroom').insertBefore(elem, firstElem);
+        });
+
+        hubConnection.on('test', function(...params) { console.log(params); });
+
+        hubConnection.onreconnecting(error => {
+            console.assert(hubConnection.state === signalR.HubConnectionState.Reconnecting);
+
+            console.log(`Connection lost due to error "${error}". Reconnecting.`);
+        });
+        hubConnection.onreconnected(connectionId => {
+            console.assert(hubConnection.state === signalR.HubConnectionState.Connected);
+
+            console.log(`Connection reestablished. Connected with connectionId "${connectionId}".`);
+        });
+        hubConnection.onclose(error => {
+            console.assert(hubConnection.state === signalR.HubConnectionState.Disconnected);
+            
+            console.log(`Connection closed due to error "${error}". Try refreshing this page to restart the connection.`);
+        });
+
+        document.getElementById('sendBtn').addEventListener('click', function() {
+            const user = document.getElementById('user').value;
+            const message = document.getElementById('message').value;
+
+            if (!user || !message) return;
+
+            hubConnection.invoke('OnSend', message, user);
+        });
+
+        document.getElementById('loginBtn').addEventListener('click', function() {
+            const user = document.getElementById('username').value;
+            document.getElementById('header').innerHTML = `<h3>Welcome ${user}</h3>`;
+            document.getElementById('user').value = user;
+        });
+
+        function test() {
+            hubConnection.invoke('Send');
+        }
+
+        hubConnection.start();
+    </script>
+}

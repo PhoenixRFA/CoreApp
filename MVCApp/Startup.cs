@@ -28,6 +28,7 @@ using MVCApp.Infrastructure.ModelBinders;
 using MVCApp.Infrastructure.ValueProviders;
 using MVCApp.Models;
 using MVCApp.Services;
+using MVCApp.SignalR;
 
 namespace MVCApp
 {
@@ -106,6 +107,14 @@ namespace MVCApp
             services.AddDistributedMemoryCache();
             services.AddSession();
 
+            services.AddSignalR(opts =>
+                {
+                    //opts.ClientTimeoutInterval = TimeSpan.FromSeconds(5);
+                    //opts.HandshakeTimeout = TimeSpan.FromSeconds(5);
+                    opts.KeepAliveInterval = TimeSpan.FromSeconds(60);
+                    opts.EnableDetailedErrors = true;
+                })
+                .AddHubOptions<ChatHub>(opts => { });
             //services.AddResponseCompression(opts=>
             //{
             //    opts.EnableForHttps = true;
@@ -186,6 +195,8 @@ namespace MVCApp
                 endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
 
                 endpoints.MapControllerRoute("test", "testLink{foo}-{bar}", new { controller = "Home", action = "Index"});
+
+                endpoints.MapHub<ChatHub>("/chat", opts => { });
             });
         }
     }
