@@ -84,6 +84,7 @@ namespace MVCApp
             services.AddScoped<IRequestStoreService, RequestStoreService>();
             services.AddSingleton<IApplicationService, ApplicationService>(provider => new ApplicationService("MVC Test Application"));
             services.AddScoped<IUsersService, UsersService>();
+            services.AddScoped<IDapperService, DapperService>(x=> new DapperService(connection));
 
             services.Configure<SomeSettings>(Configuration.GetSection("SomeSettings"));
 
