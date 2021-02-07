@@ -9,9 +9,11 @@
     <input id="username" type="text" />
     <input id="user" type="hidden" />
     <button id="loginBtn">Login</button>
-</div><br />
- 
-<div id="header"></div><br />
+</div>
+<br />
+
+<div id="header"></div>
+<br />
 
 <div id="inputForm">
     <input type="text" id="message" />
@@ -31,7 +33,7 @@
 
         hubConnection.serverTimeoutInMilliseconds = 120000;
 
-        hubConnection.on('send', function(msg, user) {
+        hubConnection.on('send', function (msg, user) {
             console.log({ data: { msg, user }, context: this });
 
             const userNameElem = document.createElement('b');
@@ -45,7 +47,7 @@
             document.getElementById('chatroom').insertBefore(elem, firstElem);
         });
 
-        hubConnection.on('test', function(...params) { console.log(params); });
+        hubConnection.on('test', function (...params) { console.log(params); });
 
         hubConnection.onreconnecting(error => {
             console.assert(hubConnection.state === signalR.HubConnectionState.Reconnecting);
@@ -59,11 +61,11 @@
         });
         hubConnection.onclose(error => {
             console.assert(hubConnection.state === signalR.HubConnectionState.Disconnected);
-            
+
             console.log(`Connection closed due to error "${error}". Try refreshing this page to restart the connection.`);
         });
 
-        document.getElementById('sendBtn').addEventListener('click', function() {
+        document.getElementById('sendBtn').addEventListener('click', function () {
             const user = document.getElementById('user').value;
             const message = document.getElementById('message').value;
 
@@ -72,7 +74,7 @@
             hubConnection.invoke('OnSend', message, user);
         });
 
-        document.getElementById('loginBtn').addEventListener('click', function() {
+        document.getElementById('loginBtn').addEventListener('click', function () {
             const user = document.getElementById('username').value;
             document.getElementById('header').innerHTML = `<h3>Welcome ${user}</h3>`;
             document.getElementById('user').value = user;
@@ -83,5 +85,50 @@
         }
 
         hubConnection.start();
+    </script>
+    <script>
+        const hubConnection2 = new signalR.HubConnectionBuilder()
+            .configureLogging(signalR.LogLevel.Information) //None, Critical, Error, Warning, Information, Debug, Trace
+            .withUrl('/notify', { transport: signalR.HttpTransportType.WebSockets })//ServerSentEvents, WebSockets, LongPolling
+            .withAutomaticReconnect([0, 2000, 10000, 30000])//defaults for delays between reconnects
+            .build();
+
+        hubConnection2.serverTimeoutInMilliseconds = 120000;
+
+        hubConnection2.on('debug', function (msg) {
+            console.log({ data: msg, context: this });
+        });
+
+        hubConnection2.on('notify', function (msg) {
+            console.log({ data: { msg }, context: this });
+
+            const userNameElem = document.createElement('b');
+            userNameElem.appendChild(document.createTextNode('notification: '));
+
+            const elem = document.createElement('p');
+            elem.appendChild(userNameElem);
+            elem.appendChild(document.createTextNode(msg));
+
+            const firstElem = document.getElementById('chatroom').firstChild;
+            document.getElementById('chatroom').insertBefore(elem, firstElem);
+        });
+
+        hubConnection2.onreconnecting(error => {
+            console.assert(hubConnection2.state === signalR.HubConnectionState.Reconnecting);
+
+            console.log(`Connection lost due to error "${error}". Reconnecting.`);
+        });
+        hubConnection2.onreconnected(connectionId => {
+            console.assert(hubConnection2.state === signalR.HubConnectionState.Connected);
+
+            console.log(`Connection reestablished. Connected with connectionId "${connectionId}".`);
+        });
+        hubConnection2.onclose(error => {
+            console.assert(hubConnection2.state === signalR.HubConnectionState.Disconnected);
+
+            console.log(`Connection closed due to error "${error}". Try refreshing this page to restart the connection.`);
+        });
+
+        hubConnection2.start();
     </script>
 }

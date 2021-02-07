@@ -13,12 +13,14 @@ namespace MVCApp.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly TestappdbContext _db;
         private readonly IHubContext<ChatHub> _chatHub;
+        private readonly IHubContext<NotificationHub> _notifyHub;
 
-        public HomeController(ILogger<HomeController> logger, TestappdbContext db, IHubContext<ChatHub> chatHub)
+        public HomeController(ILogger<HomeController> logger, TestappdbContext db, IHubContext<ChatHub> chatHub, IHubContext<NotificationHub> notifyHub)
         {
             _logger = logger;
             _db = db;
             _chatHub = chatHub;
+            _notifyHub = notifyHub;
         }
 
         public IActionResult Index()
@@ -45,6 +47,12 @@ namespace MVCApp.Controllers
         public IActionResult SignalrTest()
         {
             _chatHub.Clients.All.SendAsync("send", "ATTENTION!", "system");
+            return RedirectToAction("Index");
+        }
+
+        public IActionResult SignalrNotification(string msg)
+        {
+            _notifyHub.Clients.All.SendAsync("notify", msg);
             return RedirectToAction("Index");
         }
 

@@ -197,6 +197,7 @@ namespace MVCApp
                 endpoints.MapControllerRoute("test", "testLink{foo}-{bar}", new { controller = "Home", action = "Index"});
 
                 endpoints.MapHub<ChatHub>("/chat", opts => { });
+                endpoints.MapHub<NotificationHub>("/notify", opts => { });
             });
         }
     }
