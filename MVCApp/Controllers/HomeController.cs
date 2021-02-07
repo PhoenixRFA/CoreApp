@@ -13,9 +13,9 @@ namespace MVCApp.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly TestappdbContext _db;
         private readonly IHubContext<ChatHub> _chatHub;
-        private readonly IHubContext<NotificationHub> _notifyHub;
+        private readonly IHubContext<NotificationHub, IClient> _notifyHub;
 
-        public HomeController(ILogger<HomeController> logger, TestappdbContext db, IHubContext<ChatHub> chatHub, IHubContext<NotificationHub> notifyHub)
+        public HomeController(ILogger<HomeController> logger, TestappdbContext db, IHubContext<ChatHub> chatHub, IHubContext<NotificationHub, IClient> notifyHub)
         {
             _logger = logger;
             _db = db;
@@ -52,7 +52,7 @@ namespace MVCApp.Controllers
 
         public IActionResult SignalrNotification(string msg)
         {
-            _notifyHub.Clients.All.SendAsync("notify", msg);
+            _notifyHub.Clients.All.Notify(msg);
             return RedirectToAction("Index");
         }
 

@@ -1,0 +1,55 @@
+﻿@{
+    ViewData["Title"] = "SignalR";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div id="header"></div>
+<br />
+
+<div id="inputForm">
+    <input type="text" id="message" />
+    <input type="button" id="sendBtn" value="Отправить" />
+</div>
+<div id="chatroom"></div>
+
+@section Scripts
+{
+    <script src="/js/microsoft-signalr/signalr.js"></script>
+    <script>
+        const hubConnection = new signalR.HubConnectionBuilder()
+            .withUrl('/hub')
+            .build();
+
+        hubConnection.on('send', function(msg, user, isPrivate) {
+            console.log({ data: { msg, user }, context: this });
+
+            const userNameElem = document.createElement('b');
+            userNameElem.appendChild(document.createTextNode(user + ': '));
+            
+            const elem = document.createElement('p');
+            elem.appendChild(userNameElem);
+            
+            if (isPrivate) {
+                const privateLabel = document.createElement('i');
+                privateLabel.appendChild(document.createTextNode(' private '));
+                elem.appendChild(privateLabel);
+            }
+
+            elem.appendChild(document.createTextNode(msg));
+
+            const firstElem = document.getElementById('chatroom').firstChild;
+            document.getElementById('chatroom').insertBefore(elem, firstElem);
+        });
+
+        document.getElementById('sendBtn').addEventListener('click', function () {
+            const message = document.getElementById('message').value;
+
+            if (!message) return;
+
+            hubConnection.invoke('OnSend', message);
+        });
+
+        hubConnection.start();
+    </script>
+}

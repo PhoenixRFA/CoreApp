@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 
 namespace IdentitySandboxApp.Controllers
@@ -42,6 +43,12 @@ namespace IdentitySandboxApp.Controllers
         public IActionResult CorsTest()
         {
             return Content("Ok");
+        }
+
+        [Authorize]
+        public IActionResult SignalR()
+        {
+            return View();
         }
     }
 }

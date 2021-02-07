@@ -22,6 +22,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using IdentitySandboxApp.Infrastructure.SecurityStampValidator;
+using IdentitySandboxApp.SignalR;
 using Microsoft.CodeAnalysis.Options;
 
 namespace IdentitySandboxApp
@@ -107,6 +108,8 @@ namespace IdentitySandboxApp
                     builder.WithMethods("post");
                 });
             });
+
+            services.AddSignalR();
 
             services.AddScoped<IAuthorizationHandler, UserManagerAuthorizationHandler>();
             services.AddScoped<IAuthorizationHandler, TestAuthHandler>();
@@ -220,6 +223,7 @@ namespace IdentitySandboxApp
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapHub<IdentityHub>("/hub");
             });
         }
     }
