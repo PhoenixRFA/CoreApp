@@ -66,13 +66,15 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "webpack", "webpack\", "{EF8
 		SlnRelativePath = "webpack\"
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVCApp.Tests", "MVCApp.Tests\MVCApp.Tests.csproj", "{879BF283-6FE6-4656-9205-32272B5BB245}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MVCApp.Tests", "MVCApp.Tests\MVCApp.Tests.csproj", "{879BF283-6FE6-4656-9205-32272B5BB245}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVCApp.MSTest.Tests", "MVCApp.MSTest.Tests\MVCApp.MSTest.Tests.csproj", "{5E617546-1E55-419B-9631-4F94640B510E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MVCApp.MSTest.Tests", "MVCApp.MSTest.Tests\MVCApp.MSTest.Tests.csproj", "{5E617546-1E55-419B-9631-4F94640B510E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVCApp.NUnit.Tests", "MVCApp.NUnit.Tests\MVCApp.NUnit.Tests.csproj", "{C6995283-1436-4EAD-8400-CFDFE4595800}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MVCApp.NUnit.Tests", "MVCApp.NUnit.Tests\MVCApp.NUnit.Tests.csproj", "{C6995283-1436-4EAD-8400-CFDFE4595800}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVCApp.xUnit.Tests", "MVCApp.xUnit.Tests\MVCApp.xUnit.Tests.csproj", "{FB37B02E-85EE-44AF-B195-32ED88C16222}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MVCApp.xUnit.Tests", "MVCApp.xUnit.Tests\MVCApp.xUnit.Tests.csproj", "{FB37B02E-85EE-44AF-B195-32ED88C16222}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoDBApp", "MongoDBApp\MongoDBApp.csproj", "{EFD12EC2-2DD0-4784-9150-96AD1B2EF51D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -136,6 +138,10 @@ Global
 		{FB37B02E-85EE-44AF-B195-32ED88C16222}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB37B02E-85EE-44AF-B195-32ED88C16222}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB37B02E-85EE-44AF-B195-32ED88C16222}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFD12EC2-2DD0-4784-9150-96AD1B2EF51D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFD12EC2-2DD0-4784-9150-96AD1B2EF51D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFD12EC2-2DD0-4784-9150-96AD1B2EF51D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFD12EC2-2DD0-4784-9150-96AD1B2EF51D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,43 @@
+﻿@model IndexViewModel
+@{
+    ViewData["Title"] = "MongoDB";
+}
+
+<div class="text-center">
+    <h1 class="display-4">@ViewData["Title"]</h1>
+</div>
+
+<form method="get">
+    <div class="form-group">
+        <label>Name</label>
+        <input type="text" name="Filter.Name" value="@Model.Name" class="form-control" />
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-outline-secondary">Find</button>
+    </div>
+</form>
+
+<p>
+    <a asp-controller="Home" asp-action="Create">Create</a>
+</p>
+<table class="table">
+    <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Age</th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model.Users)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td>@item.Email</td>
+            <td>@item.Age</td>
+            <td>
+                <a asp-controller="Home" asp-action="Update" asp-route-id="@item.Id">Edit</a> |
+                <a asp-controller="Home" asp-action="Delete" asp-route-id="@item.Id">Del</a>
+            </td>
+        </tr>
+    }
+</table>
