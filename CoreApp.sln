@@ -74,7 +74,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MVCApp.NUnit.Tests", "MVCAp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MVCApp.xUnit.Tests", "MVCApp.xUnit.Tests\MVCApp.xUnit.Tests.csproj", "{FB37B02E-85EE-44AF-B195-32ED88C16222}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoDBApp", "MongoDBApp\MongoDBApp.csproj", "{EFD12EC2-2DD0-4784-9150-96AD1B2EF51D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MongoDBApp", "MongoDBApp\MongoDBApp.csproj", "{EFD12EC2-2DD0-4784-9150-96AD1B2EF51D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gRPC Service", "gRPC Service\gRPC Service.csproj", "{EA29687B-0832-4CB8-A1D9-B8F3C657E747}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gRPC_Client", "gRPC_Client\gRPC_Client.csproj", "{023EBB51-6204-4EA0-BF27-CAE6F3E04A6A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -142,6 +146,14 @@ Global
 		{EFD12EC2-2DD0-4784-9150-96AD1B2EF51D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EFD12EC2-2DD0-4784-9150-96AD1B2EF51D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EFD12EC2-2DD0-4784-9150-96AD1B2EF51D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA29687B-0832-4CB8-A1D9-B8F3C657E747}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA29687B-0832-4CB8-A1D9-B8F3C657E747}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA29687B-0832-4CB8-A1D9-B8F3C657E747}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA29687B-0832-4CB8-A1D9-B8F3C657E747}.Release|Any CPU.Build.0 = Release|Any CPU
+		{023EBB51-6204-4EA0-BF27-CAE6F3E04A6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{023EBB51-6204-4EA0-BF27-CAE6F3E04A6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{023EBB51-6204-4EA0-BF27-CAE6F3E04A6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{023EBB51-6204-4EA0-BF27-CAE6F3E04A6A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
