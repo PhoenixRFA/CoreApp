@@ -6,19 +6,21 @@ package greet;
 
 // The greeting service definition.
 service Greeter {
-  // Sends a greeting
-  rpc SayHello (HelloRequest) returns (HelloReply);
-  rpc Ping (PingRequest) returns (PongReply);
+	// Sends a greeting
+	rpc SayHello (HelloRequest) returns (HelloReply);
+	rpc Ping (PingRequest) returns (PongReply);
+	rpc Test (ComplexType) returns (PongReply);
+	rpc StreamTest (stream PingRequest) returns (stream PongReply);
 }
 
 // The request message containing the user's name.
 message HelloRequest {
-  string name = 1;
+	string name = 1;
 }
 
 // The response message containing the greetings.
 message HelloReply {
-  string message = 1;
+	string message = 1;
 }
 
 message PingRequest {
@@ -26,4 +28,23 @@ message PingRequest {
 }
 message PongReply {
 	string msg = 1;
+}
+
+message ComplexType {
+	message SubType {
+		string foo = 2;
+		int32 bar = 1;
+	}
+
+	enum EnumExample {
+		DEFAULT = 0;
+		FIRST = 1;
+		SECOND = 2;
+	}
+
+	reserved 3;
+	SubType st = 1;
+	EnumExample en = 2;
+	//string remove = 3;
+	repeated string arr = 4;
 }

@@ -9,6 +9,8 @@ service Greeter {
   // Sends a greeting
   rpc SayHello (HelloRequest) returns (HelloReply);
   rpc Ping (PingRequest) returns (PongReply);
+  rpc Test (ComplexType) returns (PongReply);
+  rpc StreamTest (stream PingRequest) returns (stream PongReply);
 }
 
 // The request message containing the user's name.
@@ -26,4 +28,22 @@ message PingRequest {
 }
 message PongReply {
 	string msg = 1;
+}
+
+message ComplexType {
+	message SubType {
+		string foo = 1;
+		int32 bar = 2;
+	}
+
+	enum EnumExample {
+		DEFAULT = 0;
+		FIRST = 1;
+		SECOND = 2;
+	}
+
+	SubType st = 1;
+	EnumExample en = 2;
+	string remove = 3;
+	repeated string arr = 4;
 }

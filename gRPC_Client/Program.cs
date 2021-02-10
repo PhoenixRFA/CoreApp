@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Grpc.Core;
 using Grpc.Net.Client;
 
 namespace gRPC_Client
@@ -27,6 +29,43 @@ namespace gRPC_Client
             });
             
             Console.WriteLine("ping2 (ping):" + ping2.Msg);
+
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
+
+            PongReply test = await client.TestAsync(new ComplexType
+            {
+                En = ComplexType.Types.EnumExample.First,
+                Arr = { "1", "2", "3" },
+                //Remove = "remove",
+                St = new ComplexType.Types.SubType
+                {
+                    Bar = 314,
+                    Foo = "foooo"
+                }
+            }, new Metadata{ {"header", "some header data"} },
+                DateTime.Now.ToUniversalTime().AddMinutes(5));
+
+            Console.WriteLine("test:" + test.Msg);
+
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
+
+            AsyncDuplexStreamingCall<PingRequest, PongReply> stream = client.StreamTest();
+            await stream.RequestStream.WriteAsync(new PingRequest {Msg = "foo"});
+            await stream.RequestStream.WriteAsync(new PingRequest {Msg = "fooooo"});
+            await stream.RequestStream.WriteAsync(new PingRequest {Msg = "foooooooo"});
+
+            PongReply cur = stream.ResponseStream.Current;
+            Console.WriteLine($"pong: {cur?.Msg}");
+            await stream.ResponseStream.MoveNext();
+            cur = stream.ResponseStream.Current;
+            Console.WriteLine($"pong: {cur?.Msg}");
+            await stream.ResponseStream.MoveNext();
+            cur = stream.ResponseStream.Current;
+            Console.WriteLine($"pong: {cur?.Msg}");
+
+            await stream.RequestStream.CompleteAsync();
 
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
