@@ -1,13 +1,18 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,18 +22,23 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MVCApp.Infrastructure;
 using MVCApp.Infrastructure.AuthorizationRequirements;
 using MVCApp.Infrastructure.Constraints;
 using MVCApp.Infrastructure.Filters;
+using MVCApp.Infrastructure.HealthCheck;
 using MVCApp.Infrastructure.Middleware;
 using MVCApp.Infrastructure.ModelBinders;
 using MVCApp.Infrastructure.ValueProviders;
 using MVCApp.Models;
 using MVCApp.Services;
 using MVCApp.SignalR;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace MVCApp
 {
@@ -123,6 +133,24 @@ namespace MVCApp
             //{
             //    options.Level = CompressionLevel.Optimal;
             //});
+
+            services.AddHostedService<StartupHostedService>();
+            services.AddSingleton<StartupHostedServiceHealthCheck>();
+
+            services.AddHealthChecks()
+                .AddCheck<ExampleHealthCheck>("example_health_check", HealthStatus.Unhealthy, new[] {"tag1"})
+                //.AddCheck("failed_check", () => HealthCheckResult.Unhealthy("Fooo"), new[] {"tag2"})
+                .AddSqlServer(connection, name: "sql_server")
+                .AddDbContextCheck<TestappdbContext>("ef_check")
+                .AddCheck<StartupHostedServiceHealthCheck>("hosted_service_check", HealthStatus.Degraded, new []{ "ready" });
+
+            services.Configure<HealthCheckPublisherOptions>(options =>
+            {
+                options.Delay = TimeSpan.FromSeconds(2);
+                //options.Predicate = (check) => check.Tags.Contains("ready");
+            });
+
+            services.AddSingleton<IHealthCheckPublisher, ReadinessPublisher>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
@@ -198,7 +226,54 @@ namespace MVCApp
 
                 endpoints.MapHub<ChatHub>("/chat", opts => { });
                 endpoints.MapHub<NotificationHub>("/notify", opts => { });
+
+                endpoints.MapHealthChecks("/health", new HealthCheckOptions
+                {
+                    Predicate = check => check.Tags.Contains("tag1")
+                });
+                endpoints.MapHealthChecks("/healthsql", new HealthCheckOptions
+                {
+                    Predicate = check => check.Name == "sql_server"
+                });
+                endpoints.MapHealthChecks("/health2", new HealthCheckOptions
+                {
+                    AllowCachingResponses = false,
+                    //Predicate = check => check.Name == "failed_check",
+                    ResultStatusCodes = new Dictionary<HealthStatus, int>
+                    {
+                        {HealthStatus.Healthy, StatusCodes.Status200OK},
+                        {HealthStatus.Degraded, StatusCodes.Status200OK},
+                        {HealthStatus.Unhealthy, StatusCodes.Status503ServiceUnavailable}
+                    },
+                    ResponseWriter = JsonWriter
+                });
+                endpoints.MapHealthChecks("/health/ready", new HealthCheckOptions
+                {
+                    Predicate = check => check.Tags.Contains("ready")
+                });
+                endpoints.MapHealthChecks("/health/live", new HealthCheckOptions
+                {
+                    Predicate = _ => false
+                });
             });
+        }
+
+        private static Task JsonWriter (HttpContext context, HealthReport result)
+        {
+            context.Response.ContentType = "application/json";
+
+            var json = new JObject(
+                new JProperty("status", result.Status.ToString()),
+                new JProperty("results", 
+                    new JObject(result.Entries.Select(pair =>
+                        new JProperty(pair.Key, new JObject(
+                            new JProperty("status", pair.Value.Status.ToString()),
+                            new JProperty("description", pair.Value.Description),
+                            new JProperty("data", 
+                                new JObject(pair.Value.Data.Select(p => new JProperty(p.Key, p.Value))
+                            ))))))));
+
+            return context.Response.WriteAsync(json.ToString(Formatting.Indented));
         }
     }
 }
