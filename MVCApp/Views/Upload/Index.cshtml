@@ -1,0 +1,53 @@
+﻿@{
+    ViewData["Title"] = "Uploads";
+}
+<h1>@ViewData["Title"]</h1>
+<div class="">
+    <form asp-action="Upload" method="post" enctype="multipart/form-data" onsubmit="showAlert()">
+        <div id="alert" class="alert alert-info" hidden>Uploaded!</div>
+        <div class="form-group">
+            <input id="file" class="form-control-file" type="file" name="file" />
+        </div>
+        <div class="form-group">
+            <button class="btn btn-primary" type="submit">Upload</button>
+            <button class="btn btn-primary" type="button" onclick="upload()">Upload by chunks</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    'use strict';
+
+    // ReSharper disable once ExperimentalFeature
+    async function upload() {
+        const fileInput = document.getElementById('file');
+        if (fileInput.files.length === 0) return;
+        const file = fileInput.files[0];
+
+        const chunkSize = 4000;
+        const url = '@Url.Action("UploadChunks")';
+
+        for (let start = 0; start < file.size; start += chunkSize) {
+            const chunk = file.slice(start, start + chunkSize);
+            const fd = new FormData();
+            fd.append('data', chunk);
+            fd.append('name', file.name);
+            fd.append('mime', file.type);
+            fd.append('isLast', start + chunkSize >= file.size);
+
+            console.count('chunck');
+            // ReSharper disable once ExperimentalFeature
+            await fetch(url, { method: 'post', body: fd }).then(res => res.text());
+        }
+
+        document.forms[0].reset();
+        
+        showAlert();
+    }
+
+    function showAlert() {
+        document.getElementById('alert').hidden = false;
+
+        setTimeout(() => document.getElementById('alert').hidden = true, 3000);
+    }
+</script>
