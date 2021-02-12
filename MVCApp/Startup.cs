@@ -138,6 +138,7 @@ namespace MVCApp
             services.AddSingleton<StartupHostedServiceHealthCheck>();
 
             services.AddHealthChecks()
+                .AddMemoryHealthCheck("memory")
                 .AddCheck<ExampleHealthCheck>("example_health_check", HealthStatus.Unhealthy, new[] {"tag1"})
                 //.AddCheck("failed_check", () => HealthCheckResult.Unhealthy("Fooo"), new[] {"tag2"})
                 .AddSqlServer(connection, name: "sql_server")
@@ -148,6 +149,8 @@ namespace MVCApp
             {
                 options.Delay = TimeSpan.FromSeconds(2);
                 //options.Predicate = (check) => check.Tags.Contains("ready");
+                options.Period = TimeSpan.FromSeconds(60);
+                options.Timeout = TimeSpan.FromSeconds(10);
             });
 
             services.AddSingleton<IHealthCheckPublisher, ReadinessPublisher>();
