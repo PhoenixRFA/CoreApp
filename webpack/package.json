@@ -4,7 +4,8 @@
   "description": "test app with webpack",
   "private": true,
   "scripts": {
-    "build": "webpack"
+    "build": "webpack",
+    "test": "mocha"
   },
   "author": "phoenixrfa",
   "license": "ISC",
@@ -13,6 +14,9 @@
     "@babel/plugin-transform-runtime": "^7.12.10",
     "@babel/preset-env": "^7.12.11",
     "babel-loader": "^8.2.2",
+    "chai": "^4.3.0",
+    "mocha": "^8.3.0",
+    "sinon": "^9.2.4",
     "webpack": "^5.19.0",
     "webpack-cli": "^4.4.0"
   }
