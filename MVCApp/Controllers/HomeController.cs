@@ -56,6 +56,33 @@ namespace MVCApp.Controllers
             return RedirectToAction("Index");
         }
 
+        public IActionResult Fetch()
+        {
+            return View();
+        }
+
+        public IActionResult Data(string id)
+        {
+            Response.Cookies.Append("_foo", "fooval");
+            Response.Headers.Add("_bar", "barval");
+
+            return Json(new {
+                id,
+                method = Request.Method,
+                items = new[] { "foo", "bar", "baz" }
+            });
+        }
+
+        public IActionResult Err()
+        {
+            return StatusCode(500);
+        }
+
+        public IActionResult BadReq()
+        {
+            return BadRequest();
+        }
+
         public IActionResult InitDb()
         {
             _db.Companies.AddRange(

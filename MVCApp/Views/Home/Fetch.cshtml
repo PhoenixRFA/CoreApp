@@ -1,0 +1,189 @@
+﻿@{
+    ViewData["Title"] = "Fetch API";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<script>
+    function get() {
+        fetch('/home/data')
+            .then(resp => {
+                console.log('GET', resp);
+                //resp.text();
+                return resp.json();
+            })
+            .then(resp => {
+                console.log('GET res', resp);
+            });
+    }
+
+    function post() {
+        const fd = new FormData();
+        fd.append('id', 123);
+
+        fetch('/home/data', {
+            method: 'post',
+            body: fd
+        })
+            .then(resp => resp.json())
+            .then(res => { console.log('POST', res) });
+    }
+    function put() {
+        fetch('/home/data', {
+            method: 'put'
+        })
+            .then(resp => resp.json())
+            .then(res => { console.log('PUT', res) });
+    }
+    function del() {
+        fetch('/home/data', {
+            method: 'delete'
+        })
+            .then(resp => resp.json())
+            .then(res => { console.log('DELETE', res) });
+    }
+
+    function error() {
+        fetch('/home/err')
+            .then(resp => {
+                console.log('Error', resp);
+            })
+            .then(resp => {
+                console.log(resp);
+            })
+            .catch(ex => {
+                console.log('Error', ex)
+            });
+    }
+
+    function badRequest() {
+        fetch('/home/badReq')
+            .then(resp => {
+                console.log('BadRequest', resp);
+            })
+            .catch(ex => {
+                console.log('BadRequest', ex)
+            });
+    }
+
+    function notFound() {
+        fetch('/home/noSuchMethod')
+            .then(resp => {
+                console.log('NotFound', resp);
+            })
+            .catch(ex => {
+                console.log('NotFound', ex)
+            });
+    }
+
+    //TODO CORS
+    //TODO? abort last request
+    //TODO? abort request by id
+    //TODO handle response.json() or response.text()
+    function doRequest(params) {
+        const defaults = {
+            url: '',
+            data: {},
+            method: 'GET',
+            useJson: false,
+            headers: {},
+            signal: undefined,
+            //NYI
+            referrer: '',
+            referrerPolicy: 'no-referrer',
+            mode: 'cors', // same-origin, no-cors
+            credentials: 'same-origin', // omit, include
+            cache: 'default', // no-store, reload, no-cache, force-cache, only-if-cached
+            redirect: 'follow', // manual, error
+            integrity: '',
+            keepalive: false
+        };
+
+        params = Object.assign({}, defaults, params);
+
+        let includeBody = false;
+        let body;
+        let url = params.url;
+            
+        if (['GET', 'DELETE'].includes(params.method.toUpperCase())) {
+            if (params.data && Object.getOwnPropertyNames(params.data).length) {
+                const query = [];
+                for (key in params.data) {
+                    query.push(key + '=' + params.data[key]);
+                }
+            
+                const hasQuestion = !!~url.indexOf('?');
+                url += (hasQuestion ? '&' : '?') + query.join('&');
+            }
+        } else {
+            includeBody = true;
+
+            if (params.useJson) {
+                body = JSON.stringify(params.data);
+                params.headers['Content-Type'] = 'application/json; charset=utf-8';
+            } else {
+                body = new FormData();
+                for (key in params.data) {
+                    body.append(key, params.data[key]);
+                }
+            }
+        }
+
+        console.log(url, params);
+
+        return fetch(url, {
+            method: params.method,
+            body: includeBody ? body : undefined,
+            headers: params.headers,
+            signal: params.signal,
+            //referrer: params.referrer,
+            //referrerPolicy: params.referrerPolicy
+        })
+    }
+
+    function test1() {
+        doRequest({
+            url: '/home/data',
+            data: { id: 1 }
+        })
+            .then(resp => resp.json())
+            .then(res => console.log(res));
+    }
+    function test2() {
+        doRequest({
+            url: '/home/data',
+            data: { id: 1 },
+            method: 'post'
+        }).then(resp => resp.json())
+            .then(res => console.log(res));
+    }
+    function test3() {
+        doRequest({
+            url: '/home/data',
+            data: { id: 1 },
+            method: 'post',
+            useJson: true
+        }).then(resp => resp.json())
+            .then(res => console.log(res));;
+    }
+    function test4() {
+        const controller = new AbortController();
+        doRequest({
+            url: '/home/data?foo=123',
+            data: { id: 1 },
+            signal: controller.signal
+        });
+        doRequest({
+            url: '/home/data?asd=111&fff=222',
+            data: { id: 2 },
+            signal: controller.signal
+        });
+        doRequest({
+            url: '/home/data',
+            data: { id: 3 },
+            signal: controller.signal
+        });
+
+        controller.abort();
+    }
+</script>
