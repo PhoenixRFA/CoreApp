@@ -1,0 +1,258 @@
+﻿@{
+    ViewData["title"] = "WebComponents";
+}
+
+<h1>@ViewData["Title"]</h1>
+<h2>CustomElements</h2>
+<div>
+    <input is="my-element-changer" href="element1"/>
+</div>
+<div>
+    <my-element id="element1" count="3">Test</my-element>
+</div>
+
+<script>
+    class MyElementChanger extends HTMLInputElement {
+        constructor() {
+            super();
+
+            this.controlItem = null;
+            this.value = 3;
+        }
+
+        connectedCallback() {
+            const isAny = this._findControllItem();
+
+            if (!isAny) {
+                console.error('There is no connected element! Use "href" attribute with id');
+                return;
+            }
+
+            this._init();
+        }
+
+        _findControllItem() {
+            const id = this.getAttribute('href');
+            const elem = document.getElementById(id);
+
+            if (elem) {
+                this.controlItem = elem;
+                return true;
+            }
+
+            return false;
+        }
+
+        _init() {
+            const btnLess = document.createElement('button');
+            btnLess.textContent = ' < ';
+            btnLess.onclick = () => this._onLess();
+
+            const btnMore = document.createElement('button');
+            btnMore.textContent = ' > ';
+            btnMore.onclick = () => this._onMore();
+
+            this.before(btnLess);
+            this.after(btnMore);
+
+            this.onchange = this._changeTarget;
+        }
+
+        _onLess() {
+            if (this.value == 1) return;
+
+            this.value--;
+            this.onchange();
+        }
+
+        _onMore() {
+            this.value++;
+            this.onchange();
+        }
+
+        _changeTarget() {
+            if (!this.controlItem) return;
+
+            this.controlItem.setAttribute('count', this.value);
+        }
+    }
+
+    class MyElement extends HTMLElement {
+        constructor() {
+            super();
+            //Элемент создан
+
+            this.buttons = [];
+        }
+
+        connectedCallback() {
+            // браузер вызывает этот метод при добавлении элемента в документ
+            // (может вызываться много раз, если элемент многократно добавляется/удаляется)
+
+            const count = this.getAttribute('count');
+
+            this._init(count);
+        }
+
+        _init(count) {
+            if (!count || isNaN(count) || count < 1) {
+                this.style.color = 'red';
+                this.innerHTML = 'Error: count must be number > 0';
+                return;
+            }
+
+            this.buttons = [];
+            this.innerHTML = '';
+
+            for (let i = 0; i < count; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = '#' + i;
+                btn._index = i;
+                btn.onclick = () => this._activate(i);
+
+                this.appendChild(btn);
+                this.buttons.push(btn);
+            }
+
+            this._activate(1);
+        }
+
+        _activate(idx) {
+            if (idx < 0 || idx > this.buttons.length) return;
+
+            const activeBtnIdx = this.buttons.findIndex(x => x.classList.contains('active'));
+            if (idx == activeBtnIdx) return;
+
+            if (~activeBtnIdx) {
+                const activeBtn = this.buttons[activeBtnIdx];
+                activeBtn.textContent = activeBtn.textContent.slice(1);
+                activeBtn.style.fontWeight = 400;
+                activeBtn.classList.remove('active');
+            }
+
+            const btn = this.buttons[idx];
+            btn.textContent = '*' + btn.textContent;
+            btn.style.fontWeight = 800;
+            btn.classList.add('active');
+        }
+
+        disconnectedCallback() {
+            // браузер вызывает этот метод при удалении элемента из документа
+            // (может вызываться много раз, если элемент многократно добавляется/удаляется)
+        }
+
+        static get observedAttributes() {
+            /* массив имён атрибутов для отслеживания их изменений */
+            return ['count'];
+        }
+
+        attributeChangedCallback(name, oldValue, newValue) {
+            // вызывается при изменении одного из перечисленных выше атрибутов
+            if (name == 'count') {
+                this._init(+newValue);
+            }
+        }
+
+        adoptedCallback() {
+            // вызывается, когда элемент перемещается в новый документ
+            // (происходит в document.adoptNode, используется очень редко)
+        }
+
+        // у элемента могут быть ещё другие методы и свойства
+    }
+
+    customElements.define('my-element', MyElement);
+    customElements.define('my-element-changer', MyElementChanger, {extends: 'input'});
+</script>
+
+<h2>Shadow DOM</h2>
+<div>
+    <shadow-elem></shadow-elem>
+</div>
+
+<script>
+    customElements.define('shadow-elem', class extends HTMLElement {
+        connectedCallback() {
+            const shadow = this.attachShadow({ mode: 'open' });
+            shadow.innerHTML = `
+                <style>
+                    input {
+                        font-size: 16px;
+                    }
+
+                    p {
+                        margin: 0;
+                        padding: 0.5em 0;
+                        font-size: 16px;
+                    }
+
+                    button {
+                        border-radius: 5px;
+                    }
+                </style>
+                <input id=input placeholder="some value" /><br/>
+                <p id=label></p>
+                <button id=button>Do Some Work!</button>
+            `;
+
+            const inp = shadow.querySelector('#input');
+            const label = shadow.querySelector('#label');
+            const btn = shadow.querySelector('#button');
+
+            btn.onclick = () => {
+                const val = inp.value;
+                const span = document.createElement('span');
+                span.textContent = val;
+                const br = document.createElement('br');
+
+                label.append(val);
+                label.append(br);
+            };
+        }
+    });
+</script>
+
+<h2>Templates</h2>
+<template id="test-tmpl">
+    <style>
+        table {
+            border: 1px dashed gray;
+        }
+    </style>
+    <table>
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Foo</td>
+            <td>Foo_value</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Bar</td>
+            <td>Bar_value</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Baz</td>
+            <td>Baz_value</td>
+        </tr>
+    </table>
+</template>
+
+<div id="table-wrap">
+    <p>There will be template</p>
+</div>
+<button onclick="applyTemplate()">Apply template</button>
+<script>
+    function applyTemplate () {
+        const wrap = document.getElementById('table-wrap');
+        const tmpl = document.getElementById('test-tmpl');
+
+        wrap.innerHTML = '';
+        wrap.append(tmpl.content.cloneNode(true));
+    }
+</script>

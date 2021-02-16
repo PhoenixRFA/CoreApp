@@ -83,6 +83,11 @@ namespace MVCApp.Controllers
             return BadRequest();
         }
 
+        public IActionResult WebComponents()
+        {
+            return View();
+        }
+
         public IActionResult InitDb()
         {
             _db.Companies.AddRange(
