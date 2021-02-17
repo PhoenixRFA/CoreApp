@@ -88,6 +88,11 @@ namespace MVCApp.Controllers
             return View();
         }
 
+        public IActionResult ServiceWorker()
+        {
+            return View();
+        }
+
         public IActionResult InitDb()
         {
             _db.Companies.AddRange(

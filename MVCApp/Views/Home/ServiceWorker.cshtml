@@ -1,0 +1,12 @@
+﻿@{
+    ViewData["Title"] = "Service worker";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<h3>Service Worker state: <span id="sw-status"></span></h3>
+
+<div id="images-wrap"></div>
+<button class="btn btn-primary" onclick="loadAllImages()">Load Images</button>
+
+<script src="~/js/serviceWorker.js"></script>
