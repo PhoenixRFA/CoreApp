@@ -31,7 +31,7 @@ self.addEventListener('activate', event => {
     //caches.delete('v1');
 });
 
-const ignoreUrls = ['/home/serviceworker', '/js/serviceworker.js', '/js/indexeddb.js'];
+const ignoreUrls = ['/home/serviceworker', '/js/serviceworker.js', '/js/indexeddb.js', '/js/webworker.js', '/js/sharedworker.js'];
 
 self.addEventListener('fetch', event => {
     const url = new URL(event.request.url);

@@ -1,4 +1,26 @@
-﻿function installSW() {
+﻿window.addEventListener('load', function() {
+    installSW();
+
+    navigator.serviceWorker.addEventListener('message', event => {
+        console.log('Received data from Sevice Worker:', event.data);
+        console.debug('Received event from Sevice Worker:', event);
+    });
+
+    navigator.serviceWorker.addEventListener('controllerchange', event => {
+        console.log('Sevice Worker controller change:', event);
+        //console.debug('Sevice Worker controller change:', event);
+    });
+
+    navigator.connection.addEventListener('change', event => {
+        console.log('Internet connection changed: %c%s %c%s speed: %o mbps', (navigator.onLine ? 'color: green;' : 'color: red;'), (navigator.onLine ? 'online' : 'offline'), '', event.target.effectiveType, event.target.downlink);
+    });
+
+    runWorker();
+    runSharedWorker();
+    broadcastMessage('some data');
+});
+
+function installSW() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js', { scope: './' })
             .then(event => {
@@ -29,24 +51,6 @@
         console.error('ServiceWorker is not supported');
     }
 }
-
-window.addEventListener('load', function() {
-    installSW();
-
-    navigator.serviceWorker.addEventListener('message', event => {
-        console.log('Received data from Sevice Worker:', event.data);
-        console.debug('Received event from Sevice Worker:', event);
-    });
-
-    navigator.serviceWorker.addEventListener('controllerchange', event => {
-        console.log('Sevice Worker controller change:', event);
-        //console.debug('Sevice Worker controller change:', event);
-    });
-
-    navigator.connection.addEventListener('change', event => {
-        console.log('Internet connection changed: %c%s %c%s speed: %o mbps', (navigator.onLine ? 'color: green;' : 'color: red;'), (navigator.onLine ? 'online' : 'offline'), '', event.target.effectiveType, event.target.downlink);
-    });
-});
 
 function loadAllImages() {
     loadImage('/img/sw1.png');
@@ -126,4 +130,63 @@ function checkSync() {
     navigator.serviceWorker.ready.then(reg => 
         reg.sync.getTags().then(tags => console.log('Sync tasks:', tags))
     );
+}
+
+
+function runWorker(param) {
+    if (!window.Worker) return;
+
+    const myWorker = new Worker('/js/webWorker.js');
+
+    myWorker.onerror = console.warn;
+    myWorker.onmessageerror = console.warn;
+
+    myWorker.onmessage = function(event) {
+        console.log('Received data from worker:', event.data);
+        myWorker.terminate();
+    };
+
+    const data = { foo: 1, bar: 3.14 };
+    console.log('Post message to worker:', { data: param || data });
+    myWorker.postMessage(param || data);
+}
+
+function runSharedWorker(param) {
+    if (!window.SharedWorker) return;
+    
+    const sharedWorker = new SharedWorker('/js/sharedWorker.js');
+    
+    sharedWorker.onerror = console.warn;
+    sharedWorker.port.onmessageerror = console.warn;
+    
+    sharedWorker.port.onmessage = function(event) {
+        console.log('Received data from shared worker:', event.data);
+        
+        if (event.data === 'close') {
+            sharedWorker.port.close();
+        }
+    };
+
+    const data = { foo: 1, bar: 3.14 };
+    console.log('Post message to shared worker:', { data: param || data });
+    sharedWorker.port.start();
+    sharedWorker.port.postMessage(param || data);
+}
+
+function broadcastMessage(msg) {
+    if (!window.SharedWorker) return;
+    
+    const bc = new BroadcastChannel('test_channel');
+
+    const data = { msg, name };
+    console.log('Broadcast:', data);
+    bc.postMessage(data);
+
+    bc.onmessage = function(e) {
+        console.log('Received broadcasted message:', e.data);
+
+        if (event.data === 'close') {
+            bc.close();
+        }
+    }
 }
