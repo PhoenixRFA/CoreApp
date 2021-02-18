@@ -17,6 +17,7 @@
                 }
 
                 if (serviceWorker) {
+                    window._sw = serviceWorker;
                     console.log('service worker state:', serviceWorker.state);
                     serviceWorker.addEventListener('statechange', function(e) {
                         console.log('service worker state change:', e.target.state);
@@ -31,6 +32,20 @@
 
 window.addEventListener('load', function() {
     installSW();
+
+    navigator.serviceWorker.addEventListener('message', event => {
+        console.log('Received data from Sevice Worker:', event.data);
+        console.debug('Received event from Sevice Worker:', event);
+    });
+
+    navigator.serviceWorker.addEventListener('controllerchange', event => {
+        console.log('Sevice Worker controller change:', event);
+        //console.debug('Sevice Worker controller change:', event);
+    });
+
+    navigator.connection.addEventListener('change', event => {
+        console.log('Internet connection changed: %c%s %c%s speed: %o mbps', (navigator.onLine ? 'color: green;' : 'color: red;'), (navigator.onLine ? 'online' : 'offline'), '', event.target.effectiveType, event.target.downlink);
+    });
 });
 
 function loadAllImages() {
@@ -53,4 +68,62 @@ function loadImage(src) {
         const wrap = document.getElementById('images-wrap');
         wrap.append(img);
     });
+}
+
+function sendDataToSW(data) {
+    console.log('Send data to Sevice Worker:', data);
+    navigator.serviceWorker.controller.postMessage(data);
+}
+
+//only when app is installed!
+function registerPeriodicTask(tag) {
+    console.log('Register periodic task:', tag);
+    navigator.permissions.query({ name: 'periodic-background-sync' })
+        .then(permission=> console.log('Periodic Background Sync:', permission.status));
+
+    navigator.serviceWorker.ready
+        .then(reg =>                                    //5 sec
+            reg.periodicSync.register(tag, { minInterval: 5 * 1000 })
+                .catch(err => console.warn('registration periodic task error', err))
+        );
+}
+
+function checkPeriodicTask() {
+    navigator.serviceWorker.ready.then(reg => 
+        reg.periodicSync.getTags().then(tags => console.log('Periodic sync tasks:', tags))
+    );
+}
+
+function removePeriodicTask(tag) {
+    navigator.serviceWorker.ready.then(reg => 
+        reg.periodicSync.unregister(tag)
+        .then(res => console.log('Periodic task removed', res))
+        .catch(err => console.warn('error on unregister priodic task', err))
+    );
+}
+
+
+
+function registerSync(tag) {
+    console.log('Register sync:', tag);
+
+    navigator.serviceWorker.ready
+        .then(reg =>
+            reg.sync.register(tag, {
+                allowOnBattery: true,
+                id: tag + '' + Date.now(),
+                idleRequired: false,
+                maxDelay: 0, //without max delay
+                minDelay: 0,
+                minPeriod: 0,
+                minRequiredNetwork: 'network-online'
+            })
+            .catch(err => console.warn('registration sync error', err))
+        );
+}
+
+function checkSync() {
+    navigator.serviceWorker.ready.then(reg => 
+        reg.sync.getTags().then(tags => console.log('Sync tasks:', tags))
+    );
 }
