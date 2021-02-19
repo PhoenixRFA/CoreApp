@@ -31,7 +31,7 @@ self.addEventListener('activate', event => {
     //caches.delete('v1');
 });
 
-const ignoreUrls = ['/home/serviceworker', '/js/serviceworker.js', '/js/indexeddb.js', '/js/webworker.js', '/js/sharedworker.js'];
+const ignoreUrls = ['/home/serviceworker', '/js/serviceworker.js', '/js/indexeddb.js', '/js/webworker.js', '/js/sharedworker.js', '/manifest.json'];
 
 self.addEventListener('fetch', event => {
     const url = new URL(event.request.url);
@@ -66,16 +66,15 @@ self.addEventListener('message', event => {
             case 'clients':
                 clients.matchAll()
                     .then(clients => console.log(clients));
-                
-                //works only if click on push
-                //clients.openWindow('https://localhost:44324/Home/ServiceWorker');
-                //clients.matchAll().then(clients => client[0].focus());
                 break;
             case 'ping':
                 clients.matchAll({ type: 'window' })
                     .then(clients =>
                         clients.forEach(client => client.postMessage('pong'))
                     );
+                break;
+            case 'test':
+            
                 break;
         }
     }
@@ -88,4 +87,59 @@ self.addEventListener('periodicsync', event => {
 self.addEventListener('sync', event => {
     console.log('Sync event:', event.tag);
     console.debug('Sync event:', event);
+});
+
+
+self.addEventListener('push', event => {
+    let notificationPermission; 
+    if (self.Notification) {
+        notificationPermission = self.Notification.permission;
+    }
+
+    if (!notificationPermission || notificationPermission != 'granted') {
+        console.warn('Push permission: ', notificationPermission);
+        return;
+    }
+
+    console.log('[ServiceWorker] Push:', event);
+
+    self.registration.showNotification('Test notification', {
+        body: 'Test notification body',
+        tag: 'simple-push-demo-notification',
+        icon: '/img/logo/logo-96.png'
+    });
+});
+
+self.addEventListener('notificationclick', event => {
+    console.log(event, event.notification,
+        {
+            actions: event.notification.actions,
+            badge: event.notification.badge,
+            body: event.notification.body,
+            data: event.notification.data,
+            dir: event.notification.dir,
+            lang: event.notification.lang,
+            tag: event.notification.tag,
+            icon: event.notification.icon,
+            image: event.notification.image,
+            renotify: event.notification.renotify,
+            requireInteraction: event.notification.requireInteraction,
+            silent: event.notification.silent,
+            timestamp: event.notification.timestamp,
+            title: event.notification.title,
+            vibrate: event.notification.vibrate
+        });
+
+    event.notification.close();
+
+    event.waitUntil(clients.matchAll({ type: 'window' })
+        .then(clientList => {
+            for (let i = 0; i < clientList.length; i++) {
+                const client = clientList[i];
+                
+                //works only if click on push
+                if ('focus' in client) return client.focus();
+                //if (clients.openWindow) return clients.openWindow('/');
+            }
+    }));
 });

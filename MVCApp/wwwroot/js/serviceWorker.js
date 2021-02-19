@@ -83,7 +83,7 @@ function sendDataToSW(data) {
 function registerPeriodicTask(tag) {
     console.log('Register periodic task:', tag);
     navigator.permissions.query({ name: 'periodic-background-sync' })
-        .then(permission=> console.log('Periodic Background Sync:', permission.status));
+        .then(permission=> console.log('Periodic Background Sync:', permission.state));
 
     navigator.serviceWorker.ready
         .then(reg =>                                    //5 sec
