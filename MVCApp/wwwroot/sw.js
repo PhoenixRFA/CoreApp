@@ -106,7 +106,21 @@ self.addEventListener('push', event => {
     self.registration.showNotification('Test notification', {
         body: 'Test notification body',
         tag: 'simple-push-demo-notification',
-        icon: '/img/logo/logo-96.png'
+        icon: '/img/logo/logo-96.png',
+        badge: '/img/logo-32.png',
+        image: '/img/sw1.png',
+        actions: [
+            {
+                action: 'coffee-action',
+                title: 'Coffee',
+                //icon: '/images/demos/action-1-128x128.png'
+            },
+            {
+                action: 'doughnut-action',
+                title: 'Doughnut',
+                //icon: '/images/demos/action-2-128x128.png'
+            }
+        ]
     });
 });
 
