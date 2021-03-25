@@ -110,7 +110,9 @@ self.addEventListener('push', event => {
         actions: [
             { action: 'ok', title: 'Ok', icon: '/img/ok.png'},
             { action: 'no', title: 'Nope', icon: '/img/no.png'}
-        ]
+        ],
+        badge: '/img/logo-32.png',
+        image: '/img/sw1.png'
     });
 });
 
