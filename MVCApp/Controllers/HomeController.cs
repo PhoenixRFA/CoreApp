@@ -4,6 +4,7 @@ using MVCApp.Models;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Configuration;
 using MVCApp.SignalR;
 
 namespace MVCApp.Controllers
@@ -14,13 +15,15 @@ namespace MVCApp.Controllers
         private readonly TestappdbContext _db;
         private readonly IHubContext<ChatHub> _chatHub;
         private readonly IHubContext<NotificationHub, IClient> _notifyHub;
+        private readonly IConfiguration _config;
 
-        public HomeController(ILogger<HomeController> logger, TestappdbContext db, IHubContext<ChatHub> chatHub, IHubContext<NotificationHub, IClient> notifyHub)
+        public HomeController(ILogger<HomeController> logger, TestappdbContext db, IHubContext<ChatHub> chatHub, IHubContext<NotificationHub, IClient> notifyHub, IConfiguration config)
         {
             _logger = logger;
             _db = db;
             _chatHub = chatHub;
             _notifyHub = notifyHub;
+            _config = config;
         }
 
         public IActionResult Index()
@@ -91,6 +94,18 @@ namespace MVCApp.Controllers
         public IActionResult ServiceWorker()
         {
             return View();
+        }
+
+        [HttpPost]
+        public IActionResult SavePushSubscription([FromBody]PushSubscription subscription)
+        {
+            if(subscription == null) return Json(new {result = false});
+
+            _config["webPushKeys:endpoint"] = subscription.Endpoint;
+            //_config["webPushKeys:auth"] = string.Join(string.Empty, subscription.Keys.Auth);
+            //_config["webPushKeys:p256dh"] = string.Join(string.Empty, subscription.Keys.P256DH);
+
+            return Json(new {result = true});
         }
 
         public IActionResult InitDb()

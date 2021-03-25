@@ -190,3 +190,81 @@ function broadcastMessage(msg) {
         }
     }
 }
+
+const key = 'BAvF2H4E6IQjU-00LOk2YuFu6eBgwq7smZo2lmrwIG7zEKq2O6rCumJAuP-YvsuYhTDeOXzv5Wb13_LgTLTEG6A';
+
+function _pushSubscription() {
+    const subscribeOptions = {
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(key)
+    };
+    
+    return navigator.serviceWorker.ready
+        .then(reg => reg.pushManager.subscribe(subscribeOptions));
+}
+
+function pushSubscription() {
+    _pushSubscription()
+        .then(subscription => console.log('Push subscription:', subscription));
+    //.then(reg => reg.pushManager.permissionState({ userVisibleOnly: true }))
+    //.then(permission => console.log(permission));
+}
+function _getPushSubscriptions() {
+    return navigator.serviceWorker.ready
+        .then(reg => reg.pushManager.getSubscription());
+}
+function getPushSubscriptions() {
+    _getPushSubscriptions().then(subscription => console.log('Push subscription:', subscription));
+}
+
+function getPushSubscriptionObject() {
+    return _getPushSubscriptions().then(subscription => ({
+        endpoint: subscription.endpoint,
+        keys: {
+            auth: subscription.getKey('auth'),
+            p256dh: subscription.getKey('p256dh')
+        }
+    }));
+}
+function sendSubscriptionToServer(subscriptionObject) {
+    return fetch('/Home/SavePushSubscription', {
+        method: 'POST',
+        headers: {
+            'content-type': 'application/json'
+        },
+        body: JSON.stringify(subscriptionObject)
+    })
+        .then(resp => {
+            if (!resp.ok) throw new Error('Bad status code');
+
+            return resp.json();
+        })
+        .then(res => {
+            if (!(res.result)) throw new Error('Bad response');
+        });
+}
+
+function askPushPermission() {
+    Notification.requestPermission()
+        .then(res => console.log('Push permission:', res));
+}
+
+function isPushAvailable() {
+    return ('serviceWorker' in navigator) && ('PushManager' in window);
+}
+
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+        .replace(/-/g, '+')
+        .replace(/_/g, '/');
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; i++) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+
+    return outputArray;
+}

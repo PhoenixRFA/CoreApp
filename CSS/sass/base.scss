@@ -1,0 +1,88 @@
+$color1: #ffadad;
+$color2: #ffd6a5;
+$color3: #fdffb6;
+$color4: #caffbf;
+$color5: #9bf6ff;
+$color6: #a0c4ff;
+$color7: #bdb2ff;
+$color8: #ffc6ff;
+$color9: #fffffc;
+
+$colors:($color1, $color2, $color3, $color4, $color5, $color6, $color7, $color8, $color9);
+
+@for $i from 1 through 9 {
+    .color-#{$i} {
+        color: nth($colors, $i);
+    }
+    .color-dk-#{$i} {
+        color: darken(nth($colors, $i), 10%);
+    }
+}
+
+$main-padding-y: 1.5em;
+$main-padding-x: 2em;
+$main-margin-y: 5em;
+$main-margin-x: auto;
+
+body {
+    background: lighten($color8, 10%);
+    font-size: 16px;
+    font-family: "Noto Sans JP", sans-serif;
+}
+
+main {
+    width: 1280px;
+    margin: 5em auto;
+    border-radius: 5px;
+    background: $color9;
+    padding: 1.5em 2em;
+    min-height: calc(100vh - #{$main-margin-y * 2 + $main-padding-y * 2});
+}
+
+a {
+    text-decoration: none;
+}
+
+h1,
+h2,
+h3 {
+    text-align: center;
+}
+
+$card-bg-color: #ffffff;
+$card-border-color: #eeeeee;
+
+.card {
+    background: $card-bg-color;
+    border-radius: 5px;
+    min-height: 200px;
+    border: 1px solid $card-border-color;
+    padding: 0 1em 1em;
+    display: flex;
+    flex-flow: column;
+    overflow: hidden;
+    margin: 1em 0;
+
+    .card-header {
+        padding-top: 0.25em;
+        text-align: center;
+        border-bottom: 1px solid $card-border-color;
+        flex: 0 0 auto;
+    }
+
+    .card-body {
+        margin-top: 0.25em;
+        flex: 1 0 auto;
+        border-radius: 3px;
+    }
+}
+
+.container {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+
+    .card {
+        flex: 0 1 20%;
+    }
+}

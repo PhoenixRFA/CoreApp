@@ -36,7 +36,7 @@ const ignoreUrls = ['/home/serviceworker', '/js/serviceworker.js', '/js/indexedd
 self.addEventListener('fetch', event => {
     const url = new URL(event.request.url);
     const path = url.pathname.toLocaleLowerCase();
-    if (ignoreUrls.includes(path)) return;
+    if (event.request.method.toLowerCase() !== 'get' || ignoreUrls.includes(path)) return;
 
     console.debug('new fetch', url.toString(), event);
 
@@ -106,29 +106,33 @@ self.addEventListener('push', event => {
     self.registration.showNotification('Test notification', {
         body: 'Test notification body',
         tag: 'simple-push-demo-notification',
-        icon: '/img/logo/logo-96.png'
+        icon: '/img/logo/logo-96.png',
+        actions: [
+            { action: 'ok', title: 'Ok', icon: '/img/ok.png'},
+            { action: 'no', title: 'Nope', icon: '/img/no.png'}
+        ]
     });
 });
 
 self.addEventListener('notificationclick', event => {
-    console.log(event, event.notification,
-        {
-            actions: event.notification.actions,
-            badge: event.notification.badge,
-            body: event.notification.body,
-            data: event.notification.data,
-            dir: event.notification.dir,
-            lang: event.notification.lang,
-            tag: event.notification.tag,
-            icon: event.notification.icon,
-            image: event.notification.image,
-            renotify: event.notification.renotify,
-            requireInteraction: event.notification.requireInteraction,
-            silent: event.notification.silent,
-            timestamp: event.notification.timestamp,
-            title: event.notification.title,
-            vibrate: event.notification.vibrate
-        });
+    //console.log(event, event.notification,
+    //    {
+    //        actions: event.notification.actions,
+    //        badge: event.notification.badge,
+    //        body: event.notification.body,
+    //        data: event.notification.data,
+    //        dir: event.notification.dir,
+    //        lang: event.notification.lang,
+    //        tag: event.notification.tag,
+    //        icon: event.notification.icon,
+    //        image: event.notification.image,
+    //        renotify: event.notification.renotify,
+    //        requireInteraction: event.notification.requireInteraction,
+    //        silent: event.notification.silent,
+    //        timestamp: event.notification.timestamp,
+    //        title: event.notification.title,
+    //        vibrate: event.notification.vibrate
+    //    });
 
     event.notification.close();
 

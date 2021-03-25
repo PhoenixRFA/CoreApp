@@ -1,0 +1,261 @@
+.anim-pulse {
+    animation: pulse 1s infinite;
+}
+
+.anim-stretch {
+    animation-name: stretch;
+    animation-duration: 1.5s;
+    animation-timing-function: ease-out;
+    animation-delay: 0;
+    animation-direction: alternate;
+    animation-iteration-count: infinite;
+    animation-fill-mode: none;
+    animation-play-state: running;
+}
+
+.anim-multiple {
+    animation:
+        pulse2 3s ease infinite alternate,
+        nudge 5s linear infinite alternate;
+}
+
+.anim-circle {
+    background: #caffbf;
+    animation: circle 3s linear infinite normal;
+}
+
+.flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.anim-loader {
+    width: 50px;
+    height: 50px;
+    position: relative;
+    animation: loader 2s infinite ease-in-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+
+    span {
+        width: 50px;
+        height: 50px;
+        position: absolute;
+        left: 0;
+        top: 0;
+        border: 4px solid #0b1b48;
+        box-sizing: border-box;
+
+        @for $i from 1 through 4 {
+            &:nth-child(#{$i}) {
+                animation: loader-span-#{$i} 2s ease-in-out infinite;
+            }
+        }
+    }
+}
+
+.anim-loader-2 {
+    width: 100px;
+    height: 100px;
+    position: relative;
+
+    span {
+        display: block;
+        position: absolute;
+        width: 40%;
+        height: 40%;
+        border-radius: 50%;
+        box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.4);
+        animation: loader-2 2s infinite ease-in-out;
+    }
+
+    .one {
+        background: #f3b222;
+        animation-delay: 1.5s;
+    }
+
+    .two {
+        background: #f0653e;
+        animation-delay: 1s;
+    }
+
+    .three {
+        background: #b9c0c0;
+        animation-delay: 0.5s;
+    }
+
+    .four {
+        background: #8f7473;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        background-color: #001f3f;
+    }
+
+    100% {
+        background-color: #ff4136;
+    }
+}
+
+@keyframes stretch {
+    0% {
+        transform: scale(0.3);
+        background-color: red;
+        border-radius: 100%;
+    }
+
+    50% {
+        background-color: orange;
+    }
+
+    100% {
+        transform: scale(1);
+        background-color: yellow;
+    }
+}
+
+@keyframes pulse2 {
+    0%,
+    100% {
+        background-color: red;
+    }
+
+    50% {
+        background-color: orange;
+    }
+}
+
+@keyframes nudge {
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+
+    50% {
+        transform: translate(150px, 0);
+    }
+
+    80% {
+        transform: translate(-150px, 0);
+    }
+}
+
+@keyframes circle {
+    0%,
+    100% {
+        transform: translate(-100px, 0);
+    }
+
+    25% {
+        transform: translate(0, 50px);
+    }
+
+    50% {
+        transform: translate(100px, 0);
+    }
+
+    75% {
+        transform: translate(0, -50px);
+    }
+}
+
+@keyframes loader {
+    0% {
+        transform: rotate(-45deg);
+    }
+
+    50% {
+        transform: rotate(-135deg);
+    }
+
+    100% {
+        transform: rotate(-225deg);
+    }
+}
+
+@keyframes loader-span-1 {
+    0% {
+        transform: translate(0);
+    }
+
+    50% {
+        transform: translate(-50px, 0);
+        border-color: #ee4d68;
+    }
+
+    100% {
+        transform: translate(0);
+    }
+}
+
+@keyframes loader-span-2 {
+    0% {
+        transform: translate(0);
+    }
+
+    50% {
+        transform: translate(50px, 0);
+        border-color: #875678;
+    }
+
+    100% {
+        transform: translate(0);
+    }
+}
+
+@keyframes loader-span-3 {
+    0% {
+        transform: translate(0);
+    }
+
+    50% {
+        transform: translate(0, -50px);
+        border-color: #ff9900;
+    }
+
+    100% {
+        transform: translate(0);
+    }
+}
+
+@keyframes loader-span-4 {
+    0% {
+        transform: translate(0);
+    }
+
+    50% {
+        transform: translate(0, 50px);
+        border-color: #00e4f6;
+    }
+
+    100% {
+        transform: translate(0);
+    }
+}
+
+@keyframes loader-2 {
+    0% {
+        transform: translate(0%);
+        border-radius: 50%;
+    }
+
+    25% {
+        transform: translate(150%) scale(0.5);
+        border-radius: 0%;
+    }
+
+    50% {
+        transform: translate(150%, 150%);
+        border-radius: 50%;
+    }
+
+    75% {
+        transform: translate(0%, 150%) scale(0.5);
+        border-radius: 0%;
+    }
+}
