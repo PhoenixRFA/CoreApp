@@ -92,6 +92,29 @@
     }
 }
 
+#transition-1 {
+    transition:
+        font-size 1s,
+        color 1s;
+}
+
+#transition-2 {
+    transition-property: opacity, width, height;
+    transition-duration: 1s;
+    transition-timing-function: ease-in-out;
+    overflow: hidden;
+    display: block;
+    height: 50px;
+    width: 100%;
+    margin: 0;
+}
+
+#run-transition-2,
+#run-transition-3,
+#run-transition-4 {
+    width: 100%;
+}
+
 @keyframes pulse {
     0% {
         background-color: #001f3f;
